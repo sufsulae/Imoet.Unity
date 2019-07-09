@@ -35,13 +35,13 @@ namespace Imoet.Unity.Animation
             
             //Serialized Field
             [SerializeField]
-            private TweenSetting m_setting;
-            [SerializeField]
             private string m_methodName;
             [SerializeField]
             private Component m_component;
             [SerializeField]
             private UnityEventExUtility.UnityReadableType m_valueType;
+            [SerializeField]
+            private TweenSetting m_setting;
 
             //Field
             private MethodInfo m_methodInfo;

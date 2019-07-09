@@ -1,539 +1,510 @@
-using UnityEngine;
-using UnityEditor;
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using Imoet.Unity.Animation;
-using U = UnityEngine;
-namespace Imoet.UnityEditor{
-	public class DynamicList {
-		private List<Item> m_items = new List<Item>();
-		private SerializedProperty m_inspectedProp;
-		private int m_arrayCount;
-		private bool m_dragged;
-		private static Style m_style;
-		
-		//Config
-		private float m_headerHeight = 17;
-		private float m_itemHeaderHeight = 17;
-		private bool m_itemHasBody = true;
-		private float m_itemBodySize = 32;
-		private float m_animateMoveSpeed = 0.5f;
-		private bool m_orderable;
-		private float m_allItemHeight;
-		private U.Rect m_itemAreaRect;
-		
-		//Temp
-		private U.Vector2 m_startMousePos;
-		private Item m_selectedItem;
-		private int m_selectedItemIdx;
-		private U.Rect m_selectedItemRect;
-		private U.Vector2 m_lastDelta;
-		private Action m_repaint;
-		private bool m_reqRepaint;
-		
-		private bool[] m_tmpBool;
-		
-		//Property
-		public float headerHeight{
-			get{return m_headerHeight;}
-			set{m_headerHeight = value;}
-		}
-		public float itemHeaderHeight{
-			get{return m_itemHeaderHeight;}
-			set{m_itemHeaderHeight = value;}
-		}
-		public float itemBodySize{
-			get{return m_itemBodySize;}
-			set{m_itemBodySize = value;}
-		}
-		public bool itemHasBody{
-			get{return m_itemHasBody;}
-			set{m_itemHasBody = value;}
-		}
-		public float animSpeed{
-			get{return m_animateMoveSpeed;}
-			set{m_animateMoveSpeed = value;}
-		}
-		public Action<U.Rect,SerializedProperty> headerDrawCallBack{ get; set; }
-		public Action<U.Rect,SerializedProperty> itemHeaderDrawCallBack{ get; set; }
-		public Action<U.Rect,SerializedProperty> itemBodyDrawCallBack{ get; set; }
-		
-		//Construtor
-		public DynamicList(){}
-		public DynamicList(SerializedProperty property, bool orderable, Action repaint){
-			if(property == null)
-				throw new UnityException("Property is Null!!!");
-			if(!property.isArray)
-				throw new UnityException("Only accepted array property");
-			m_inspectedProp = property;
-			m_orderable = orderable;
-			m_repaint = repaint;
-		}
-		public DynamicList(SerializedProperty property, bool orderable) : this(property,orderable,null){}
-		public DynamicList(SerializedProperty property) : this(property,true){}
-		
-		//Private Function
-		private Item FindItem(int id)
-		{
-			for(int i=0; i<m_arrayCount; i++)
-			if(m_items[i].id == id){
-				return m_items[i];
-			}
-			return null;
-		}
-		
-		private void ValidateEvent(Event e){
-			switch(e.type){
-			case EventType.mouseDown:
-				for(int i=0; i<m_arrayCount; i++){
-					//If We Found any rect that its handle contain the mousePosition, select it
-					if(m_items[i].dragHandleRect.Contains(e.mousePosition)){
-						m_selectedItem = m_items[i];
-						m_selectedItemRect = m_selectedItem.rect;
-						m_selectedItemIdx = i;
-						m_selectedItem.selected = true;
-						m_tmpBool = new bool[m_arrayCount];
-						for(int x=0; x<m_arrayCount; x++){
-							m_tmpBool[x] = m_items[x].expanded;
-						}
-						break;
-					}
-				}
-				if(m_selectedItem != null){
-					//Mark our mouse position for calculating delta position
-					m_startMousePos = e.mousePosition;
-					
-					//Calculate Item Area Size for Drawing
-					m_itemAreaRect = m_items[0].rect;
-					m_itemAreaRect.height = 0;
-					for(int i=0; i<m_arrayCount; i++){
-						//Lock All Item so every item has rect from last information
-						m_items[i].locked = true;
-						m_itemAreaRect.height += m_items[i].rect.height+4;
-					}
-					e.Use();
-				}
-				break;
-			case EventType.mouseDrag:
-				if(m_orderable && m_selectedItem != null){
-					m_dragged = true;
-					U.Vector2 mousePosGap = e.mousePosition - m_startMousePos;
-					U.Vector2 deltaMousePosition = mousePosGap - m_lastDelta;
-					m_lastDelta = mousePosGap;
-					
-					float selectedPos = m_selectedItemRect.y+mousePosGap.y;
-					if(selectedPos < m_itemAreaRect.yMin)
-						selectedPos = m_itemAreaRect.yMin;
-					else if(selectedPos + m_selectedItem.rect.height > m_itemAreaRect.yMax)
-						selectedPos = m_itemAreaRect.yMax - m_selectedItem.rect.height;
-					m_selectedItem.rect = new U.Rect(m_selectedItemRect.x,selectedPos,m_selectedItemRect.width,m_selectedItemRect.height);
-					
-					if(deltaMousePosition.y != 0){
-						U.Rect selectedRect = m_selectedItem.rect;
-						U.Rect tmpRect = new U.Rect();
-						int deltaID = 0;
-						for(int i=0; i<m_arrayCount; i++){
-							U.Rect iRect = m_items[i].rect;
-							if(m_items[i] != m_selectedItem)
-							{
-								if(selectedRect.Contains(iRect.center)) {
-									deltaID = m_items[i].id - m_selectedItem.id;
-								}
-							}
-						}
-						
-						if(deltaID != 0){
-							int dir = (int)Mathf.Sign(deltaID);
-							deltaID = (deltaID < 0) ? -deltaID : deltaID;
-							while(deltaID > 0){
-								Item nextItem = FindItem(m_selectedItem.id + dir);
-								
-								tmpRect = nextItem.rect;
-								tmpRect.y -= (m_selectedItem.rect.height + 4) * dir;
-								nextItem.rect = tmpRect;
-								
-								bool tmp = m_tmpBool[m_selectedItem.id];
-								m_tmpBool[m_selectedItem.id] = m_tmpBool[m_selectedItem.id + dir];
-								m_tmpBool[m_selectedItem.id + dir] = tmp;
-								
-								nextItem.id -= dir;
-								m_selectedItem.id += dir;
-								
-								deltaID--;
-							}
-						}
-					}
-					e.Use();
-				}
-				break;
-			case EventType.ignore:
-			case EventType.mouseUp:
-				if(m_selectedItem != null)
-				{
-					//Open All locked Rect
-					for(int i=0; i<m_arrayCount; i++){
-						m_items[i].expanded = m_tmpBool[i];
-						m_items[i].locked = false;
-					}
-					
-					//If we select the item and release without making any movement,We can assume we just click that item
-					if(!m_dragged && m_startMousePos == e.mousePosition)
-						m_selectedItem.expanded = !m_selectedItem.expanded;
-					
-					//If We move the item, check if it is moving or not
-					else if(m_selectedItemIdx != m_items[m_selectedItemIdx].id && m_orderable){
-						m_inspectedProp.MoveArrayElement(m_selectedItemIdx,m_selectedItem.id);
-						for(int i=0; i<m_arrayCount; i++) {
-							m_items[i].property = m_inspectedProp.GetArrayElementAtIndex(i);
-						}
-					}
-					//Reset Value
-					for(int i=0; i<m_arrayCount; i++){
-						m_items[i].id = i;
-					}
-					m_selectedItem.selected = false;
-					m_selectedItem = null;
-					m_selectedItemIdx = -1;
-					m_dragged = false;
-					m_lastDelta = U.Vector2.zero;
-					e.Use();
-				}
-				break;
-			}
-		}
-		
-		//Public Function
-		public void Draw(){
-			//Check Style if Dissapear
-			if (m_style == null)
-				m_style = new Style ();
-			
-			//Refresh All Items if Array Suddenly Changed
-			if(m_arrayCount != m_inspectedProp.arraySize)
-				RefreshAllItem();
-			
-			#region DRAW
-			EditorGUILayout.BeginVertical(m_style.baseBackground);
-			
-			#region Header
-			if(headerDrawCallBack != null){
-				U.Rect headerRect = GUILayoutUtility.GetRect(0,m_headerHeight);
-				headerDrawCallBack(headerRect,m_inspectedProp);
-			}
-			else{
-				EditorGUILayout.LabelField(m_inspectedProp.displayName,m_style.headerLeft);
-				U.Rect buttonRect = GUILayoutUtility.GetLastRect();
-				if(GUI.Button(new U.Rect(buttonRect.width + 5,buttonRect.y,15,15),m_style.plusButton,m_style.normal))
-					AddItem();
-			}
-			#endregion
-			
-			#region ItemArea
-			if(m_arrayCount > 0){
-				EditorGUILayout.BeginVertical(m_style.itemAreaBackground);
-				
-				for(int i=0; i<m_arrayCount; i++){
-					if(m_items[i] != m_selectedItem){
-						if(!m_items[i].locked)
-							m_items[i].id = i;
-						m_items[i].Draw();
-					}
-				}
-				
-				//Debug.Log ("Has Repaint " + (m_repaint != null));
-				if(m_reqRepaint)
-				{
-					m_reqRepaint = false;
-					if(m_repaint != null)
-						m_repaint.Invoke();
-				}
-				
-				//Validate Event
-				ValidateEvent(Event.current);
-				
-				//Draw Selected Item
-				if(m_selectedItem != null)
-				{
-					GUILayoutUtility.GetRect(0,m_itemAreaRect.height);
-					m_selectedItem.Draw();
-				}
-				EditorGUILayout.EndVertical();
-			}
-			#endregion
-			
-			EditorGUILayout.EndVertical();
-			
-			#endregion
-		}
-		
-		public void AddItem(){
-			Item i = new Item();
-			if(m_inspectedProp != null)
-			{
-				m_inspectedProp.InsertArrayElementAtIndex(m_arrayCount);
-				i.id = m_arrayCount;
-				i.parent = this;
-				i.Setup(m_inspectedProp.GetArrayElementAtIndex(m_arrayCount));
-				i.expanded = false;
-			}
-			m_items.Add(i);
-			m_arrayCount++;
-		}
-		
-		public void DeleteItem(int idx){
-			m_items.RemoveAt(idx);
-			if(m_inspectedProp != null)
-				m_inspectedProp.DeleteArrayElementAtIndex(idx);
-			m_arrayCount--;
-			if(m_inspectedProp != null){
-				for(int i=idx; i<m_arrayCount; i++){
-					m_items[i].id = i;
-					m_items[i].parent = this;
-					m_items[i].property = m_inspectedProp.GetArrayElementAtIndex(i);
-				}
-			}
-		}
-		
-		public void DeleteItem(Item item){
-			DeleteItem(m_items.IndexOf(item));
-		}
-		
-		public void ClearItem(){
-			if(m_inspectedProp != null)
-				m_inspectedProp.ClearArray();
-			m_items.Clear();
-			m_arrayCount = 0;
-		}
-		
-		public void RefreshAllItem(){
-			m_arrayCount = m_inspectedProp.arraySize;
-			m_items = new List<Item>();
-			for(int i=0; i<m_arrayCount; i++)
-			{
-				Item newItem = new Item();
-				newItem.id = i;
-				newItem.parent = this;
-				newItem.Setup(m_inspectedProp.GetArrayElementAtIndex(i));
-				m_items.Add(newItem);
-			}
-		}
+using UnityEditor;
+using UnityEngine;
 
-		/*
-		private void PrintAllItemID(){
-			string debugString = "";
-			for(int i=0; i<m_arrayCount; i++){
-				debugString += m_items[i].id.ToString();
-			}
-			Debug.Log(debugString);
-		}
-		
-		private void PrintAllItemExpanded(){
-			string debugString = "";
-			for(int i=0; i<m_arrayCount; i++){
-				debugString += m_items[i].expanded + ",";
-			}
-			Debug.Log(debugString);
-		}
-		
-		private void PrintAllBool(IEnumerable<bool> list){
-			string debugString = ""; 
-			foreach(bool b in list){
-				debugString += b + ",";
-			}
-			Debug.Log(debugString);
-		}
-		*/
-		
-		#region Internal Class
-		public class Item{
-			internal DynamicList parent;
-			//Property
-			internal int id{
-				get{return m_id;}
-				set{m_id = value;}
-			}
-			internal U.Rect rect{
-				get{return m_myRect;}
-				set{
-					m_myRect = value;
-				}
-			}
-			internal SerializedProperty property{
-				get{
-					return m_prop;
-				}
-				set{
-					if(value != m_prop){
-						if(m_prop == null)
-							m_expanded = value.isExpanded;
-						else if(m_prop != value)
-						{
-							value.isExpanded = m_expanded;
-						}
-						m_prop = value;
-					}
-				}
-			}
-			internal U.Rect dragHandleRect{
-				get{
-					return m_handleRect;
-				}
-			}
-			internal bool expanded{
-				get{
-					return m_expanded;
-				}
-				set{
-					m_expanded = value;
-					if(m_prop != null && !m_isLocked)
-						m_prop.isExpanded = m_expanded;
-				}
-			}
-			internal bool hasBody{
-				get{return m_hasBody;}
-				set{m_hasBody = value;}
-			}
-			internal bool locked{
-				get{return m_isLocked;}
-				set{m_isLocked = value;}
-			}
-			internal bool selected{
-				get{return m_selected;}
-				set{m_selected = value;}
-			}
-			
-			//Private Field
-			private int m_id;
-			private U.Rect m_myRect,m_handleRect;
-			private U.Rect m_drawRect;
-			private SerializedProperty m_prop;
-			private bool m_expanded,m_hasBody,m_isLocked,m_selected;
-			//private UTweener<U.Rect> tweener;
-			
-			public void Setup(SerializedProperty prop){
-				m_prop = prop;
-				m_expanded = prop.isExpanded;
-			}
-			
-			public void Draw(){
-				//Calculate Item Area
-				if(!m_isLocked)
-				{
-					if(parent.itemHeaderDrawCallBack != null){
-						m_myRect.height = parent.itemHeaderHeight;
-					}
-					if(parent.itemBodyDrawCallBack != null && parent.m_itemHasBody)
-						m_myRect.height += parent.m_itemBodySize;
-					if(parent.itemHeaderDrawCallBack == null && parent.itemBodyDrawCallBack == null && m_prop != null){
-						if(parent.m_itemHasBody)
-							m_myRect.height = EditorGUI.GetPropertyHeight(m_prop,null,true);
-						else
-							m_myRect.height = 17;
-					}
-					m_myRect = GUILayoutUtility.GetRect(0,m_myRect.height+4);
-					m_myRect.y += 2;
-					m_myRect.height -= 4;
-					m_drawRect = m_myRect;
-				}
-				
-				//Check State
-				if(m_selected){
-					m_drawRect = m_myRect;
-				}
-				else{
-					if(m_drawRect != m_myRect){
-						if(parent.m_repaint != null){
-							if(!parent.m_reqRepaint)
-								parent.m_reqRepaint = true;
-                            //							if(Event.current.type == EventType.Repaint)
-                            //m_drawRect = TweenWrap.Tween(m_drawRect,m_myRect,0.05f,Imoet.Animation.TweenType.Linear);
-                            m_drawRect = m_myRect;
-						}
-						else{
-							m_drawRect = m_myRect;
-						}
-					}
-				}
-				#region Body
-				if(parent.itemBodyDrawCallBack != null && parent.m_itemHasBody){
-					parent.itemBodyDrawCallBack(new U.Rect(m_drawRect.x,m_drawRect.y+17,m_drawRect.width,parent.m_itemHeaderHeight-17),m_prop);
-				}
-				else{
-					if(m_prop != null && m_prop.isExpanded){
-						EditorGUILayoutX.BeginWideGUI();
-						U.Rect itemRect = new U.Rect(m_drawRect.x,m_drawRect.y+17,m_drawRect.width,m_drawRect.height-17);
-						GUI.Box(m_drawRect,"",m_style.itemBodyBackground);
-						int depth = m_prop.depth+1;
-						int itemCount = -1;
-						float lastH = 0;
-						SerializedProperty sProp = m_prop.Copy();
-						SerializedProperty eProp = sProp.GetEndProperty();
-						foreach(SerializedProperty p in sProp)
-						{
-							if(SerializedProperty.EqualContents(p,eProp))
-								break;
-							if(p.depth > depth-1 && p.depth <=depth)
-							{
-								float propH = EditorGUI.GetPropertyHeight(p,null,true);
-								U.Rect r = new U.Rect(itemRect.x + 15, itemRect.y+lastH,itemRect.width-25,propH);
-								EditorGUI.PropertyField(r,p,true);
-								itemCount++;
-								lastH+=propH+1;
-							}
-						}
-						sProp.Dispose();
-						eProp.Dispose();
-						EditorGUILayoutX.EndWideGUI();
-					}
-				}
-				#endregion
-				
-				#region Header
-				GUI.Box(m_drawRect,"",m_style.itemHeaderBackground);
-				U.Rect headerRect = new U.Rect(m_drawRect.x,m_drawRect.y,m_drawRect.width,17);
-				if(parent.itemHeaderDrawCallBack != null){
-					headerRect = new U.Rect(m_drawRect.x,m_drawRect.y,m_drawRect.width,parent.m_itemHeaderHeight);
-					if(parent.m_orderable){
-						headerRect.x += headerRect.height;
-						headerRect.width -= headerRect.height*2;
-					}
-					parent.itemHeaderDrawCallBack(headerRect,m_prop);
-				}
-				else{
-					if(m_prop != null)
-						GUI.Label(new U.Rect(headerRect.x + headerRect.height + headerRect.height/4,headerRect.y,headerRect.width-headerRect.height*2,headerRect.height),m_prop.displayName,m_style.header);
-				}
-				if(parent.m_orderable)
-					GUI.Box(new U.Rect(headerRect.x+headerRect.height/4,headerRect.y+headerRect.height/3.5f,headerRect.height,headerRect.height),"",m_style.itemHandle);
-				if(GUI.Button(new U.Rect(headerRect.x + headerRect.width-headerRect.height,headerRect.y,headerRect.height,headerRect.height),"",m_style.xButton)){
-					parent.DeleteItem(this);
-					return;
-				}
-				m_handleRect = headerRect;
-				#endregion
-			}
-		}
-		
-		private class Style
-		{
-			public GUIStyle headerLeft;
-			public GUIStyle normal = new GUIStyle();
-			public GUIStyle button = new GUIStyle(GUI.skin.button);
-			public GUIStyle baseBackground = new GUIStyle(GUI.skin.button);
-			public GUIStyle itemAreaBackground = EditorStyles.textArea;
-			public GUIStyle itemBodyBackground = UnityEditorSkin.RLboxBackground;
-			public GUIStyle itemHeaderBackground = UnityEditorSkin.RLheaderBackground;
-			public GUIStyle header = UnityEditorSkin.midBoldLabel;
-			public GUIStyle itemHandle = UnityEditorSkin.windowBottomResize;
-			public Texture plusButton = UnityEditorRes.IconToolbarPlus.image;
-			public GUIStyle xButton = UnityEditorSkin.windowCloseButton;
-			public Style()
-			{
-				headerLeft = new GUIStyle(header);
-				headerLeft.alignment = TextAnchor.UpperLeft;
-			}
-		}
-		#endregion
-	}
+#region Interface
+
+public interface IDynamicListHeaderDrawer
+{
+    float GetHeaderHeight(SerializedProperty property);
+    void DrawHeader(Rect rect, SerializedProperty property);
+}
+
+public interface IDynamicListItemHeaderDrawer
+{
+    float GetItemHeaderHeight(SerializedProperty property);
+    void DrawItemHeader(Rect rect, SerializedProperty property);
+}
+
+public interface IDynamicListItemBodyDrawer
+{
+    float GetItemBodyHeight(SerializedProperty property);
+    void DrawItemBody(Rect rect, SerializedProperty property);
+}
+
+#endregion Interface
+
+namespace Imoet.UnityEditor
+{
+    public class DynamicList : IDynamicListHeaderDrawer, IDynamicListItemBodyDrawer, IDynamicListItemHeaderDrawer
+    {
+        public bool reorderable { get; set; }
+
+        public IDynamicListHeaderDrawer drawerHeader { get; set; }
+        public IDynamicListItemHeaderDrawer drawerItemHeader { get; set; }
+        public IDynamicListItemBodyDrawer drawerItemBody { get; set; }
+
+        private SerializedProperty m_prop;
+        private readonly SerializedObject m_propObj;
+        private static Style m_style = null;
+
+        private List<Item> m_items = null;
+
+        private Item m_selectedItem = null;
+        private Item m_hoveredItem = null;
+        private Rect m_selectionRect = default(Rect);
+
+        private bool m_sealed = false;
+        private bool m_dragged = false;
+        private int m_predictedDir = 0;
+        private Vector2 m_lastMousePos = default(Vector2);
+
+        private Rect m_headerRect = default(Rect);
+        private Rect m_bodyRect = default(Rect);
+
+        //Default Drawer
+
+        #region Default Event Drawer
+
+        public void DrawHeader(Rect rect, SerializedProperty property)
+        {
+            rect.x += 7f;
+            EditorGUI.LabelField(rect, property.displayName, m_style.headerLabel);
+        }
+
+        public void DrawItemHeader(Rect rect, SerializedProperty property)
+        {
+            GUI.Label(rect, property.displayName, m_style.normalTextMiddle);
+        }
+
+        public void DrawItemBody(Rect rect, SerializedProperty property)
+        {
+            int inspectedDepth = property.depth;
+            float lastHeight = 5f;
+            SerializedProperty sProp = property.Copy();
+            SerializedProperty eProp = property.GetEndProperty();
+            foreach (SerializedProperty p in sProp)
+            {
+                if (SerializedProperty.EqualContents(p, eProp))
+                {
+                    break;
+                }
+
+                if (p.depth > inspectedDepth && p.depth <= inspectedDepth + 1)
+                {
+                    float propH = EditorGUI.GetPropertyHeight(p, null, true);
+                    Rect r = new Rect(rect.x + 15, rect.y + lastHeight, rect.width - 25, propH);
+                    EditorGUI.PropertyField(r, p, true);
+                    lastHeight += propH + 2;
+                }
+            }
+        }
+
+        public float GetHeaderHeight(SerializedProperty property)
+        {
+            return EditorGUIUtility.singleLineHeight;
+        }
+
+        public float GetItemHeaderHeight(SerializedProperty property)
+        {
+            return EditorGUIUtility.singleLineHeight;
+        }
+
+        public float GetItemBodyHeight(SerializedProperty property)
+        {
+            if (property.isExpanded)
+            {
+                return EditorGUI.GetPropertyHeight(property, new GUIContent(property.displayName), true);
+            }
+
+            return 0;
+        }
+
+        #endregion Default Event Drawer
+
+        //Constructor
+        public DynamicList(SerializedProperty prop)
+        {
+            if (prop == null) {
+                throw new NullReferenceException("Property is Null");
+            }
+
+            if (!prop.isArray) {
+                throw new ArgumentException("Property is not Array");
+            }
+
+            m_prop = prop;
+            m_propObj = prop.serializedObject;
+
+            drawerHeader = this;
+            drawerItemBody = this;
+            drawerItemHeader = this;
+
+            m_items = new List<Item>();
+        }
+
+        //Public Function
+
+        #region Public Function
+
+        public void Add()
+        {
+            m_prop.InsertArrayElementAtIndex(m_prop.arraySize);
+            var nItem = new Item() { prop = m_prop.GetArrayElementAtIndex(m_prop.arraySize - 1), parent = this };
+            nItem.isExpanded = false;
+            m_items.Add(nItem);
+        }
+
+        public void Delete(int idx)
+        {
+            m_prop.DeleteArrayElementAtIndex(idx);
+            m_items.RemoveAt(idx);
+            for (int i = 0; i < m_items.Count; i++)
+            {
+                m_items[i].prop = m_prop.GetArrayElementAtIndex(i);
+            }
+        }
+
+        public void Move(int src, int dst)
+        {
+            m_prop.MoveArrayElement(src, dst);
+            var i = m_items[src];
+            m_items[src] = m_items[dst];
+            m_items[dst] = i;
+        }
+
+        public void Draw()
+        {
+            //Check if property is null
+            if (m_prop == null)
+            {
+                Debug.LogError("Trying to draw nulled property, this is not allowed");
+                return;
+            }
+
+            //Style
+            if (m_style == null)
+            {
+                m_style = new Style();
+            }
+
+            //If Array Suddenly Changed, Remake
+            if (m_items != null && m_items.Count != m_prop.arraySize)
+            {
+                var nSize = m_prop.arraySize;
+                m_items = new List<Item>(nSize);
+                for (int i = 0; i < nSize; i++)
+                {
+                    var nItem = new Item();
+                    nItem.id = i;
+                    nItem.parent = this;
+                    nItem.prop = m_prop.GetArrayElementAtIndex(i);
+                    m_items.Add(nItem);
+                }
+            }
+
+            EditorGUILayout.Space();
+
+            //Draw Header of List
+            m_headerRect = GUILayoutUtility.GetRect(0, drawerHeader.GetHeaderHeight(m_prop) + 5.0f);
+            var hRect = new Rect(m_headerRect.x, m_headerRect.y + 2.5f, m_headerRect.width, m_headerRect.height - 5f);
+            GUI.Box(hRect, "", m_style.header2);
+            drawerHeader.DrawHeader(hRect, m_prop);
+            if (GUI.Button(new Rect(hRect.width - 5f, hRect.y, hRect.height, hRect.height), m_style.plusButton, m_style.normal))
+            {
+                Add();
+            }
+
+            //Draw Body only if we have an Item
+            if (m_items.Count > 0)
+            {
+                //Draw Background of List
+                m_bodyRect = _getBodyRect();
+                GUI.Box(m_bodyRect, "", m_style.body);
+
+                //Draw All Items
+                _drawItems(m_bodyRect);
+
+                //Draw On Cue from Event
+                _drawOnEvent(Event.current);
+            }
+            else
+            {
+                //Draw Empty
+                EditorGUILayout.BeginVertical(m_style.body);
+                EditorGUILayout.PrefixLabel("List Is Empty");
+                EditorGUILayout.EndVertical();
+            }
+            EditorGUILayout.Space();
+        }
+
+        #endregion Public Function
+
+        //Private Function
+
+        #region Private Function
+
+        private void _drawOnEvent(Event e)
+        {
+            switch (e.type)
+            {
+                case EventType.MouseDown:
+                    if (!m_sealed)
+                    {
+                        for (int i = 0; i < m_items.Count; i++)
+                        {
+                            if (m_items[i].isHeaderContainPoint(e.mousePosition) && m_selectedItem == null)
+                            {
+                                m_predictedDir = 0;
+                                m_selectedItem = m_items[i];
+                                m_selectionRect = default(Rect);
+
+                                m_lastMousePos = e.mousePosition;
+                                m_sealed = true;
+
+                                e.Use();
+                            }
+                            m_items[i].id = i;
+                            m_items[i].isExpanded = m_items[i].prop.isExpanded;
+                        }
+                    }
+                    break;
+                case EventType.MouseDrag:
+                    if (m_sealed && m_selectedItem != null)
+                    {
+                        m_dragged = true;
+                        var mousePos = e.mousePosition;
+                        m_hoveredItem = _findNearestFromPoint(mousePos);
+                        var mouseDir =  Mathf.Sign(e.delta.y);
+                        if (m_hoveredItem != null && m_hoveredItem != m_selectedItem) {
+                            var nearestItemRect = m_hoveredItem.rect;
+                            if (nearestItemRect.Contains(mousePos)) {
+                                var center = nearestItemRect.center;
+                                bool cantMove = (m_hoveredItem.id + 1) == m_selectedItem.id && (m_hoveredItem.id - 1) == m_selectedItem.id;
+                                if (!cantMove) {
+                                    if (mouseDir < 0 && mousePos.y < center.y)
+                                    {
+                                        m_selectionRect = new Rect(nearestItemRect.x, nearestItemRect.y - 2, nearestItemRect.width, 5);
+                                        m_predictedDir = -1;
+                                    }
+                                    else if (mouseDir > 0 && mousePos.y > center.y)
+                                    {
+                                        m_selectionRect = new Rect(nearestItemRect.x, nearestItemRect.y + nearestItemRect.height, nearestItemRect.width, 5);
+                                        m_predictedDir = 1;
+                                    }
+                                }
+                            }
+                        }
+                        e.Use();
+                    }
+                    break;
+                case EventType.Ignore:
+                case EventType.MouseUp:
+                    if (m_sealed)
+                    {
+                        //Detect "Click"
+                        if (!m_dragged)
+                        {
+                            var pMouse = e.mousePosition;
+                            var pMouseDist = Vector2.Distance(pMouse, m_lastMousePos);
+                            if (pMouseDist < 0.1f) {
+                                m_selectedItem.prop.isExpanded = !m_selectedItem.prop.isExpanded;
+                            }
+                        }
+                        //Detect Movement
+                        else {
+                            if (m_predictedDir != 0) {
+                                var tgtID = m_hoveredItem.id;
+                                Debug.Log("Move to tgtID: " + tgtID);
+                                tgtID = Mathf.Clamp(tgtID, 0, m_items.Count - 1);
+                                m_prop.MoveArrayElement(m_selectedItem.id, tgtID);
+                                m_items.RemoveAt(m_selectedItem.id);
+                                m_items.Insert(tgtID, m_selectedItem);
+                                //m_prop.MoveArrayElement(m_selectedItem.id, tgtID);
+                                for (int i = 0; i < m_items.Count; i++) {
+                                    m_items[i].prop = m_prop.GetArrayElementAtIndex(i);
+                                    m_items[i].prop.isExpanded = m_items[i].isExpanded;
+                                }
+                                //var temp = m_items[m_selectedItem.id].isExpanded;
+                                //m_items[m_selectedItem.id].prop = m_prop.GetArrayElementAtIndex(m_selectedItem.id);
+                                //m_items[m_selectedItem.id].isExpanded = m_items[tgtID].isExpanded;
+                                //m_items[tgtID].prop = m_prop.GetArrayElementAtIndex(tgtID);
+                                //m_items[tgtID].isExpanded = temp;
+                            }
+                        }
+
+                        m_dragged = false;
+                        m_selectedItem = null;
+                        m_hoveredItem = null;
+                        m_sealed = false;
+                        e.Use();
+                    }
+                    break;
+            }
+        }
+
+        private Item _findNearestFromPoint(Vector2 point)
+        {
+            var nearest = float.MaxValue;
+            Item res = null;
+            for (int i = 0; i < m_items.Count; i++)
+            {
+                var itemCenter = m_items[i].rect.center;
+                var dist = Vector2.Distance(point, itemCenter);
+                if (dist < nearest)
+                {
+                    nearest = dist;
+                    res = m_items[i];
+                }
+            }
+            return res;
+        }
+
+        private void _drawItems(Rect body)
+        {
+            if (m_sealed)
+            {
+                for (int i = 0; i < m_items.Count; i++)
+                {
+                    var item = m_items[i];
+
+                    if (item == m_selectedItem){
+                        continue;
+                    }
+
+                    //item.rect = m_mappedRect[i];
+                    item.Draw();
+                }
+                if (m_sealed) {
+                    EditorGUI.BeginDisabledGroup(true);
+                    m_selectedItem.Draw();
+                    EditorGUI.EndDisabledGroup();
+                    if(m_dragged)
+                        GUI.Box(m_selectionRect, "", m_style.selectionBox);
+                }
+            }
+            else
+            {
+                var lastH = 0.0f;
+                for (int i = 0; i < m_items.Count; i++)
+                {
+                    var item = m_items[i];
+                    var itemBodyHeight = drawerItemBody.GetItemBodyHeight(item.prop);
+                    item.headerHeight = drawerItemHeader.GetItemHeaderHeight(item.prop);
+                    item.rect = new Rect(body.x, body.y + lastH, body.width, item.headerHeight + itemBodyHeight);
+                    item.Draw();
+                    lastH += item.rect.height + 2f;
+                }
+            }
+        }
+
+        private Rect _getBodyRect()
+        {
+            var res = 2.0f;
+            for (int i = 0; i < m_items.Count; i++)
+            {
+                res += drawerItemHeader.GetItemHeaderHeight(m_items[i].prop) + drawerItemBody.GetItemBodyHeight(m_items[i].prop) + 2f;
+            }
+
+            return GUILayoutUtility.GetRect(0, res);
+        }
+
+        private void _deleteItem(Item item)
+        {
+            int idx = m_items.IndexOf(item);
+            m_prop.DeleteArrayElementAtIndex(idx);
+            m_prop.serializedObject.ApplyModifiedProperties();
+            m_items.RemoveAt(idx);
+            for (int i = idx; i < m_items.Count; i++)
+            {
+                m_items[i].parent = this;
+                m_items[i].prop = m_prop.GetArrayElementAtIndex(i);
+            }
+        }
+
+        #endregion Private Function
+
+        private class Item
+        {
+            public int id;
+            public Rect rect;
+            public DynamicList parent { get; set; }
+            public SerializedProperty prop {
+                get {
+                    return m_prop;
+                }
+                set {
+                    if (parent != null && !parent.m_sealed) {
+                        if (value == null)
+                            m_propExpanded = false;
+                        else
+                            m_propExpanded = value.isExpanded;
+                    }
+                    m_prop = value;
+                }
+            }
+            public float headerHeight { get; set; }
+            public bool isExpanded {
+                get { return m_propExpanded; }
+                set {
+                    m_propExpanded = value;
+                    prop.isExpanded = value;
+                }
+            }
+            
+            internal SerializedProperty m_prop;
+            internal bool m_propExpanded;
+            internal Rect m_myRect;
+            internal Rect m_headerRect;
+            internal Rect m_bodyRect;
+
+            public Item()
+            {
+                headerHeight = 17f;
+            }
+
+            public void Draw()
+            {
+                m_myRect = rect;
+                m_headerRect = new Rect(m_myRect.x + 2, m_myRect.y + 2, m_myRect.width - 4, headerHeight - 4);
+                m_bodyRect = new Rect(m_myRect.x + 2, m_myRect.y + headerHeight + 2, m_myRect.width - 4, m_myRect.height - headerHeight);
+
+                GUI.Box(m_bodyRect, "", m_style.body);
+                GUI.Box(m_headerRect, "", m_style.header);
+
+                parent.drawerItemHeader.DrawItemHeader(m_headerRect, prop);
+                if (prop.isExpanded){
+                    parent.drawerItemBody.DrawItemBody(m_bodyRect, prop);
+                }
+
+                if (parent.reorderable){
+                    GUI.Box(new Rect(m_myRect.x + 5f, m_myRect.y + 5f, 12f, headerHeight), "", m_style.dragHandle);
+                }
+
+                if (GUI.Button(new Rect(m_myRect.x + m_myRect.width - headerHeight - 5f, m_myRect.y, headerHeight, headerHeight), m_style.minusButton, m_style.normal)) {
+                    parent._deleteItem(this);
+                }
+            }
+
+            public bool isHeaderContainPoint(Vector2 point)
+            {
+                var detectorArea = new Rect(m_myRect.x + 5f, m_myRect.y + 5f, m_myRect.width - headerHeight, headerHeight);
+                return detectorArea.Contains(point);
+            }
+        }
+
+        private class Style
+        {
+            public GUIStyle normal = new GUIStyle();
+            public GUIStyle normalTextMiddle = new GUIStyle();
+            public GUIStyle box = new GUIStyle(GUI.skin.box);
+            public GUIStyle header2 = new GUIStyle(EditorStyles.toolbar);
+            public GUIContent plusButton = UnityEditorRes.IconToolbarPlus;
+            public GUIContent minusButton = UnityEditorRes.IconToolbarMinus;
+            public GUIStyle dragHandle = UnityEditorSkin.RLdraggingHandle;
+            public GUIStyle header = UnityEditorSkin.RLheaderBackground;
+            public GUIStyle headerLabel = UnityEditorSkin.midBoldLabel;
+            public GUIStyle body = UnityEditorSkin.RLboxBackground;
+            public GUIStyle itemBody = new GUIStyle(GUI.skin.box);
+            public GUIStyle selectionBox = new GUIStyle(GUI.skin.button);
+
+            public Style()
+            {
+                selectionBox.normal.background = selectionBox.focused.background;
+                headerLabel.alignment = TextAnchor.MiddleLeft;
+                normalTextMiddle.alignment = TextAnchor.UpperCenter;
+            }
+        }
+    }
 }

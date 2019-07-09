@@ -8,7 +8,7 @@ namespace Imoet.UnityEditor
         private SerializedProperty m_items;
         //private ReorderableList m_list;
         //private DynamicList2 m_list;
-        private DynamicList4 m_list;
+        private DynamicList m_list;
         private void OnEnable()
         {
             m_items = serializedObject.FindProperty("m_items");
@@ -16,9 +16,9 @@ namespace Imoet.UnityEditor
             //m_list = new DynamicList3(m_items, true);
         }
         public override void OnInspectorGUI()
-        {
+        { 
             if (m_list == null)
-                m_list = new DynamicList4(m_items);
+                m_list = new DynamicList(m_items);
             m_list.Draw();
             serializedObject.ApplyModifiedProperties();
         }
