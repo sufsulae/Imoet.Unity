@@ -89,7 +89,6 @@ namespace Imoet.UnityEditor {
             var methodSelector = new UnityMethodSelector();
             if (objReff != null)
             {
-                var objReffType = objReff.GetType();
                 var objReffList = new List<UnityEngine.Object>();
                 if (objReff is Component)
                 {

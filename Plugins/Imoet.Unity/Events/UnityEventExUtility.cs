@@ -23,7 +23,7 @@ namespace Imoet.Unity.Events
             typeof(UnityEngine.Object),
             typeof(Enum)
         };
-        [System.Serializable]
+        [Serializable]
         public class UnityReadableValue
         {
             public string m_string;

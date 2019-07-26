@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Imoet Dynamic List
+// Copyright Yusuf Sulaiman (C) 2019 <yusufxh@ymail.com>
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -35,8 +37,8 @@ namespace Imoet.UnityEditor
         public IDynamicListItemHeaderDrawer drawerItemHeader { get; set; }
         public IDynamicListItemBodyDrawer drawerItemBody { get; set; }
 
-        private SerializedProperty m_prop;
-        private readonly SerializedObject m_propObj;
+        //Private Variable
+        private readonly SerializedProperty m_prop;
         private static Style m_style = null;
 
         private List<Item> m_items = null;
@@ -47,25 +49,25 @@ namespace Imoet.UnityEditor
 
         private bool m_sealed = false;
         private bool m_dragged = false;
-        private int m_predictedDir = 0;
         private Vector2 m_lastMousePos = default(Vector2);
 
         private Rect m_headerRect = default(Rect);
         private Rect m_bodyRect = default(Rect);
 
         //Default Drawer
-
         #region Default Event Drawer
-
-        public void DrawHeader(Rect rect, SerializedProperty property)
-        {
-            rect.x += 7f;
+        public void DrawHeader(Rect rect, SerializedProperty property) {
             EditorGUI.LabelField(rect, property.displayName, m_style.headerLabel);
         }
 
         public void DrawItemHeader(Rect rect, SerializedProperty property)
         {
-            GUI.Label(rect, property.displayName, m_style.normalTextMiddle);
+            if (reorderable)
+                GUI.Label(rect, property.displayName, m_style.normalTextMiddle);
+            else {
+                if (GUI.Button(rect, property.displayName, m_style.normalTextMiddle))
+                    property.isExpanded = !property.isExpanded;
+            }   
         }
 
         public void DrawItemBody(Rect rect, SerializedProperty property)
@@ -93,21 +95,19 @@ namespace Imoet.UnityEditor
 
         public float GetHeaderHeight(SerializedProperty property)
         {
-            return EditorGUIUtility.singleLineHeight;
+            return 17f;
         }
 
         public float GetItemHeaderHeight(SerializedProperty property)
         {
-            return EditorGUIUtility.singleLineHeight;
+            return 17f;
         }
 
         public float GetItemBodyHeight(SerializedProperty property)
         {
-            if (property.isExpanded)
-            {
+            if (property.isExpanded && m_prop.arraySize > 0) {
                 return EditorGUI.GetPropertyHeight(property, new GUIContent(property.displayName), true);
             }
-
             return 0;
         }
 
@@ -125,7 +125,6 @@ namespace Imoet.UnityEditor
             }
 
             m_prop = prop;
-            m_propObj = prop.serializedObject;
 
             drawerHeader = this;
             drawerItemBody = this;
@@ -135,14 +134,15 @@ namespace Imoet.UnityEditor
         }
 
         //Public Function
-
         #region Public Function
-
         public void Add()
         {
             m_prop.InsertArrayElementAtIndex(m_prop.arraySize);
-            var nItem = new Item() { prop = m_prop.GetArrayElementAtIndex(m_prop.arraySize - 1), parent = this };
-            nItem.isExpanded = false;
+            var nItem = new Item() {
+                prop = m_prop.GetArrayElementAtIndex(m_prop.arraySize - 1),
+                parent = this
+            };
+            nItem.isExpanded = !reorderable;
             m_items.Add(nItem);
         }
 
@@ -158,10 +158,14 @@ namespace Imoet.UnityEditor
 
         public void Move(int src, int dst)
         {
-            m_prop.MoveArrayElement(src, dst);
-            var i = m_items[src];
-            m_items[src] = m_items[dst];
-            m_items[dst] = i;
+            m_prop.MoveArrayElement(m_selectedItem.id, dst);
+            m_items.RemoveAt(m_selectedItem.id);
+            m_items.Insert(dst, m_selectedItem);
+            for (int i = 0; i < m_items.Count; i++)
+            {
+                m_items[i].prop = m_prop.GetArrayElementAtIndex(i);
+                m_items[i].prop.isExpanded = m_items[i].isExpanded;
+            }
         }
 
         public void Draw()
@@ -200,9 +204,9 @@ namespace Imoet.UnityEditor
             m_headerRect = GUILayoutUtility.GetRect(0, drawerHeader.GetHeaderHeight(m_prop) + 5.0f);
             var hRect = new Rect(m_headerRect.x, m_headerRect.y + 2.5f, m_headerRect.width, m_headerRect.height - 5f);
             GUI.Box(hRect, "", m_style.header2);
-            drawerHeader.DrawHeader(hRect, m_prop);
-            if (GUI.Button(new Rect(hRect.width - 5f, hRect.y, hRect.height, hRect.height), m_style.plusButton, m_style.normal))
-            {
+            var drawHeader = new Rect(hRect.x + 7f, hRect.y, hRect.width, hRect.height);
+            drawerHeader.DrawHeader(drawHeader, m_prop);
+            if (GUI.Button(new Rect(hRect.width - 5f, hRect.y, hRect.height, hRect.height), m_style.plusButton, m_style.normal)) {
                 Add();
             }
 
@@ -232,21 +236,18 @@ namespace Imoet.UnityEditor
         #endregion Public Function
 
         //Private Function
-
         #region Private Function
-
         private void _drawOnEvent(Event e)
         {
             switch (e.type)
             {
                 case EventType.MouseDown:
-                    if (!m_sealed)
+                    if (!m_sealed && reorderable)
                     {
                         for (int i = 0; i < m_items.Count; i++)
                         {
                             if (m_items[i].isHeaderContainPoint(e.mousePosition) && m_selectedItem == null)
                             {
-                                m_predictedDir = 0;
                                 m_selectedItem = m_items[i];
                                 m_selectionRect = default(Rect);
 
@@ -269,21 +270,21 @@ namespace Imoet.UnityEditor
                         var mouseDir =  Mathf.Sign(e.delta.y);
                         if (m_hoveredItem != null && m_hoveredItem != m_selectedItem) {
                             var nearestItemRect = m_hoveredItem.rect;
-                            if (nearestItemRect.Contains(mousePos)) {
-                                var center = nearestItemRect.center;
-                                bool cantMove = (m_hoveredItem.id + 1) == m_selectedItem.id && (m_hoveredItem.id - 1) == m_selectedItem.id;
-                                if (!cantMove) {
-                                    if (mouseDir < 0 && mousePos.y < center.y)
-                                    {
-                                        m_selectionRect = new Rect(nearestItemRect.x, nearestItemRect.y - 2, nearestItemRect.width, 5);
-                                        m_predictedDir = -1;
-                                    }
-                                    else if (mouseDir > 0 && mousePos.y > center.y)
-                                    {
-                                        m_selectionRect = new Rect(nearestItemRect.x, nearestItemRect.y + nearestItemRect.height, nearestItemRect.width, 5);
-                                        m_predictedDir = 1;
-                                    }
+                            var center = nearestItemRect.center;
+                            bool cantMove = (m_hoveredItem.id + mouseDir) == m_selectedItem.id;
+                            if (!cantMove)
+                            {
+                                if (mouseDir < 0 && mousePos.y < center.y)
+                                {
+                                    m_selectionRect = new Rect(nearestItemRect.x, nearestItemRect.y - 2, nearestItemRect.width, 5);
                                 }
+                                else if (mouseDir > 0 && mousePos.y > center.y)
+                                {
+                                    m_selectionRect = new Rect(nearestItemRect.x, nearestItemRect.y + nearestItemRect.height, nearestItemRect.width, 5);
+                                }
+                            }
+                            else {
+                                m_selectionRect = new Rect();
                             }
                         }
                         e.Use();
@@ -293,35 +294,26 @@ namespace Imoet.UnityEditor
                 case EventType.MouseUp:
                     if (m_sealed)
                     {
+                        var mousePos = e.mousePosition;
                         //Detect "Click"
                         if (!m_dragged)
                         {
-                            var pMouse = e.mousePosition;
-                            var pMouseDist = Vector2.Distance(pMouse, m_lastMousePos);
+                            var pMouseDist = Vector2.Distance(mousePos, m_lastMousePos);
                             if (pMouseDist < 0.1f) {
                                 m_selectedItem.prop.isExpanded = !m_selectedItem.prop.isExpanded;
                             }
                         }
+
                         //Detect Movement
                         else {
-                            if (m_predictedDir != 0) {
-                                var tgtID = m_hoveredItem.id;
-                                Debug.Log("Move to tgtID: " + tgtID);
-                                tgtID = Mathf.Clamp(tgtID, 0, m_items.Count - 1);
-                                m_prop.MoveArrayElement(m_selectedItem.id, tgtID);
-                                m_items.RemoveAt(m_selectedItem.id);
-                                m_items.Insert(tgtID, m_selectedItem);
-                                //m_prop.MoveArrayElement(m_selectedItem.id, tgtID);
-                                for (int i = 0; i < m_items.Count; i++) {
-                                    m_items[i].prop = m_prop.GetArrayElementAtIndex(i);
-                                    m_items[i].prop.isExpanded = m_items[i].isExpanded;
-                                }
-                                //var temp = m_items[m_selectedItem.id].isExpanded;
-                                //m_items[m_selectedItem.id].prop = m_prop.GetArrayElementAtIndex(m_selectedItem.id);
-                                //m_items[m_selectedItem.id].isExpanded = m_items[tgtID].isExpanded;
-                                //m_items[tgtID].prop = m_prop.GetArrayElementAtIndex(tgtID);
-                                //m_items[tgtID].isExpanded = temp;
-                            }
+                            var hoveredItemCenter = m_hoveredItem.rect.center;
+                            var tgtID = m_hoveredItem.id;
+                            if (mousePos.y > hoveredItemCenter.y && m_selectedItem.id > m_hoveredItem.id)
+                                tgtID = m_hoveredItem.id + 1;
+                            else if (mousePos.y < hoveredItemCenter.y && m_selectedItem.id < m_hoveredItem.id)
+                                tgtID = m_hoveredItem.id - 1;
+                            tgtID = Mathf.Clamp(tgtID, 0, m_items.Count - 1);
+                            Move(m_selectedItem.id, tgtID);
                         }
 
                         m_dragged = false;
@@ -338,12 +330,10 @@ namespace Imoet.UnityEditor
         {
             var nearest = float.MaxValue;
             Item res = null;
-            for (int i = 0; i < m_items.Count; i++)
-            {
+            for (int i = 0; i < m_items.Count; i++) {
                 var itemCenter = m_items[i].rect.center;
                 var dist = Vector2.Distance(point, itemCenter);
-                if (dist < nearest)
-                {
+                if (dist < nearest) {
                     nearest = dist;
                     res = m_items[i];
                 }
@@ -353,19 +343,17 @@ namespace Imoet.UnityEditor
 
         private void _drawItems(Rect body)
         {
-            if (m_sealed)
-            {
-                for (int i = 0; i < m_items.Count; i++)
-                {
+            if (m_sealed) {
+                for (int i = 0; i < m_items.Count; i++) {
                     var item = m_items[i];
 
                     if (item == m_selectedItem){
                         continue;
                     }
 
-                    //item.rect = m_mappedRect[i];
                     item.Draw();
                 }
+
                 if (m_sealed) {
                     EditorGUI.BeginDisabledGroup(true);
                     m_selectedItem.Draw();
@@ -391,13 +379,13 @@ namespace Imoet.UnityEditor
 
         private Rect _getBodyRect()
         {
-            var res = 2.0f;
+            var res = 0.0f;
             for (int i = 0; i < m_items.Count; i++)
             {
-                res += drawerItemHeader.GetItemHeaderHeight(m_items[i].prop) + drawerItemBody.GetItemBodyHeight(m_items[i].prop) + 2f;
+                res += drawerItemHeader.GetItemHeaderHeight(m_items[i].prop) + drawerItemBody.GetItemBodyHeight(m_items[i].prop);
             }
 
-            return GUILayoutUtility.GetRect(0, res);
+            return GUILayoutUtility.GetRect(0, res + 15f);
         }
 
         private void _deleteItem(Item item)
@@ -421,9 +409,7 @@ namespace Imoet.UnityEditor
             public Rect rect;
             public DynamicList parent { get; set; }
             public SerializedProperty prop {
-                get {
-                    return m_prop;
-                }
+                get { return m_prop; }
                 set {
                     if (parent != null && !parent.m_sealed) {
                         if (value == null)
@@ -449,9 +435,8 @@ namespace Imoet.UnityEditor
             internal Rect m_headerRect;
             internal Rect m_bodyRect;
 
-            public Item()
-            {
-                headerHeight = 17f;
+            public Item(){
+                headerHeight = 20f;
             }
 
             public void Draw()
@@ -460,20 +445,24 @@ namespace Imoet.UnityEditor
                 m_headerRect = new Rect(m_myRect.x + 2, m_myRect.y + 2, m_myRect.width - 4, headerHeight - 4);
                 m_bodyRect = new Rect(m_myRect.x + 2, m_myRect.y + headerHeight + 2, m_myRect.width - 4, m_myRect.height - headerHeight);
 
-                GUI.Box(m_bodyRect, "", m_style.body);
+                if (prop.isExpanded)
+                    GUI.Box(m_bodyRect, "", m_style.body);
                 GUI.Box(m_headerRect, "", m_style.header);
-
+                m_headerRect.x += 14;
+                m_headerRect.height += 4;
+                m_headerRect.width -= headerHeight + 20f;
                 parent.drawerItemHeader.DrawItemHeader(m_headerRect, prop);
+                if (parent.reorderable)
+                {
+                    GUI.Box(new Rect(m_myRect.x + 5f, m_myRect.y + 8f, 12f, headerHeight - 3f), "", m_style.dragHandle);
+                }
+                if (GUI.Button(new Rect(m_myRect.x + m_myRect.width - headerHeight - 5f, m_myRect.y, headerHeight, headerHeight), m_style.minusButton, m_style.normal))
+                {
+                    parent._deleteItem(this);
+                    return;
+                }
                 if (prop.isExpanded){
                     parent.drawerItemBody.DrawItemBody(m_bodyRect, prop);
-                }
-
-                if (parent.reorderable){
-                    GUI.Box(new Rect(m_myRect.x + 5f, m_myRect.y + 5f, 12f, headerHeight), "", m_style.dragHandle);
-                }
-
-                if (GUI.Button(new Rect(m_myRect.x + m_myRect.width - headerHeight - 5f, m_myRect.y, headerHeight, headerHeight), m_style.minusButton, m_style.normal)) {
-                    parent._deleteItem(this);
                 }
             }
 
@@ -503,7 +492,7 @@ namespace Imoet.UnityEditor
             {
                 selectionBox.normal.background = selectionBox.focused.background;
                 headerLabel.alignment = TextAnchor.MiddleLeft;
-                normalTextMiddle.alignment = TextAnchor.UpperCenter;
+                normalTextMiddle.alignment = TextAnchor.MiddleCenter;
             }
         }
     }
