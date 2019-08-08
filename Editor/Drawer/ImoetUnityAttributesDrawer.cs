@@ -388,6 +388,10 @@ namespace Imoet.UnityEditor
     [CustomPropertyDrawer(typeof(NotEditableAttribute))]
     public class NotEditableAttributeDrawer : PropertyDrawer
     {
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        {
+            return EditorGUI.GetPropertyHeight(property, true);
+        }
         public override void OnGUI(UnityEngine.Rect position, SerializedProperty property, GUIContent label)
         {
             EditorGUIX.DisabledProperty(position, property, true);

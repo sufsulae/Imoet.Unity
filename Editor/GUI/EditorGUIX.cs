@@ -91,7 +91,7 @@ namespace Imoet.UnityEditor
         public static void DisabledProperty(Rect rect, SerializedProperty property, bool disabled)
         {
             EditorGUI.BeginDisabledGroup(disabled);
-            EditorGUI.PropertyField(rect, property);
+            EditorGUI.PropertyField(rect, property, true);
             EditorGUI.EndDisabledGroup();
         }
 

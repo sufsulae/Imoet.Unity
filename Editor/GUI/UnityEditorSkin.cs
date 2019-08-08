@@ -1,5 +1,6 @@
 ﻿using UnityEditor;
 using UnityEngine;
+using System.Reflection;
 
 namespace Imoet.UnityEditor
 {
@@ -12,7 +13,7 @@ namespace Imoet.UnityEditor
         }
 
         public static GUIStyle windowBottomResize { get { return GetInternalStyle("WindowBottomResize"); } }
-#if UNITY_5
+#if UNITY_5 || UNITY_5_3_OR_NEWER
         public static GUIStyle helpBox { get { return new GUIStyle(EditorStyles.helpBox); } }
         public static GUIStyle windowCloseButton { get { return new GUIStyle(GetInternalStyle("WinBtnClose")); } }
         public static GUIStyle windowMinButton { get { return new GUIStyle(GetInternalStyle("WinBtnMin")); } }
