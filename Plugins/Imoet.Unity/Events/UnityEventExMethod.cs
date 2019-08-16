@@ -2,6 +2,8 @@
 using System;
 using UnityEngine;
 using System.Reflection;
+using Imoet.Unity.Utility;
+using UnityReadableType = Imoet.Unity.Utility.UnityExUtility.UnityReadableType;
 
 namespace Imoet.Unity.Events
 {
@@ -15,7 +17,7 @@ namespace Imoet.Unity.Events
         [SerializeField]
         internal string m_methodName;
         [SerializeField]
-        private UnityEventExUtility.UnityReadableType m_methodType;
+        private UnityReadableType m_methodType;
         [SerializeField]
         private string m_methodParamTypePath;
         [SerializeField]
@@ -23,7 +25,7 @@ namespace Imoet.Unity.Events
         [SerializeField]
         internal bool m_executed;
         [SerializeField]
-        private UnityEventExUtility.UnityReadableValue m_value;
+        private UnityExUtility.UnityReadableValue m_value;
 
         //Public Property
         public bool enable
@@ -39,7 +41,7 @@ namespace Imoet.Unity.Events
         {
             get { return m_methodName; }
         }
-        public UnityEventExUtility.UnityReadableType inspectedMethodType
+        public UnityReadableType inspectedMethodType
         {
             get { return m_methodType; }
         }
@@ -90,7 +92,7 @@ namespace Imoet.Unity.Events
                 {
                     if (mInfo.Name == m_methodName)
                     {
-                        if (m_methodType != UnityEventExUtility.UnityReadableType.Void)
+                        if (m_methodType != UnityReadableType.Void)
                         {
                             ParameterInfo[] mInfoParams = mInfo.GetParameters();
                             if (mInfoParams.Length == 1)
@@ -102,7 +104,7 @@ namespace Imoet.Unity.Events
                                     internalMethod = mInfo;
                                     return true;
                                 }
-                                else if(UnityEventExUtility.UnityReadableTypeList[(int)m_methodType].IsAssignableFrom(mInfoParams[0].ParameterType) && mInfoParamType.FullName == m_methodParamTypePath)
+                                else if(UnityExUtility.UnityReadableTypeList[(int)m_methodType].IsAssignableFrom(mInfoParams[0].ParameterType) && mInfoParamType.FullName == m_methodParamTypePath)
                                 {
                                     internalMethodParam = mInfoParams[0];
                                     internalMethod = mInfo;
@@ -133,59 +135,59 @@ namespace Imoet.Unity.Events
             }
             else
             {
-                UnityEventExUtility.UnityReadableType readableType = UnityEventExUtility.getUnityReadableType(internalMethodParam.ParameterType);
+                UnityExUtility.UnityReadableType readableType = UnityExUtility.getUnityReadableType(internalMethodParam.ParameterType);
                 switch (readableType)
                 {
-                    case UnityEventExUtility.UnityReadableType.Boolean:
+                    case UnityExUtility.UnityReadableType.Boolean:
                         internalMethod.Invoke(m_reff, new object[] { m_value.m_bool });
                         return true;
-                    case UnityEventExUtility.UnityReadableType.Byte:
+                    case UnityExUtility.UnityReadableType.Byte:
                         internalMethod.Invoke(m_reff, new object[] { m_value.m_byte });
                         return true;
-                    case UnityEventExUtility.UnityReadableType.Color:
+                    case UnityExUtility.UnityReadableType.Color:
                         internalMethod.Invoke(m_reff, new object[] { m_value.m_color });
                         return true;
-                    case UnityEventExUtility.UnityReadableType.Color32:
+                    case UnityExUtility.UnityReadableType.Color32:
                         internalMethod.Invoke(m_reff, new object[] { m_value.m_color32 });
                         return true;
-                    case UnityEventExUtility.UnityReadableType.Double:
+                    case UnityExUtility.UnityReadableType.Double:
                         internalMethod.Invoke(m_reff, new object[] { m_value.m_double });
                         return true;
-                    case UnityEventExUtility.UnityReadableType.Enum:
+                    case UnityExUtility.UnityReadableType.Enum:
                         string[] allNames = Enum.GetNames(internalMethodParam.ParameterType);
                         internalMethod.Invoke(m_reff, new object[] { Enum.Parse(internalMethodParam.ParameterType, allNames[m_value.m_enum]) });
                         return true;
-                    case UnityEventExUtility.UnityReadableType.Float:
+                    case UnityExUtility.UnityReadableType.Float:
                         internalMethod.Invoke(m_reff, new object[] { m_value.m_float });
                         return true;
-                    case UnityEventExUtility.UnityReadableType.Int:
+                    case UnityExUtility.UnityReadableType.Int:
                         internalMethod.Invoke(m_reff, new object[] { m_value.m_int });
                         return true;
-                    case UnityEventExUtility.UnityReadableType.Quaternion:
+                    case UnityExUtility.UnityReadableType.Quaternion:
                         internalMethod.Invoke(m_reff, new object[] { m_value.m_quaternion });
                         return true;
-                    case UnityEventExUtility.UnityReadableType.Rect:
+                    case UnityExUtility.UnityReadableType.Rect:
                         internalMethod.Invoke(m_reff, new object[] { m_value.m_rect });
                         return true;
-                    case UnityEventExUtility.UnityReadableType.Short:
+                    case UnityExUtility.UnityReadableType.Short:
                         internalMethod.Invoke(m_reff, new object[] { m_value.m_short });
                         return true;
-                    case UnityEventExUtility.UnityReadableType.String:
+                    case UnityExUtility.UnityReadableType.String:
                         internalMethod.Invoke(m_reff, new object[] { m_value.m_string });
                         return true;
-                    case UnityEventExUtility.UnityReadableType.UnityObject:
+                    case UnityExUtility.UnityReadableType.UnityObject:
                         if (m_value.m_unityObject != null)
                             internalMethod.Invoke(m_reff, new object[] { m_value.m_unityObject });
                         else
                             internalMethod.Invoke(m_reff, new object[] { null });
                         return true;
-                    case UnityEventExUtility.UnityReadableType.Vector2:
+                    case UnityExUtility.UnityReadableType.Vector2:
                         internalMethod.Invoke(m_reff, new object[] { m_value.m_vector2 });
                         return true;
-                    case UnityEventExUtility.UnityReadableType.Vector3:
+                    case UnityExUtility.UnityReadableType.Vector3:
                         internalMethod.Invoke(m_reff, new object[] { m_value.m_vector3 });
                         return true;
-                    case UnityEventExUtility.UnityReadableType.Vector4:
+                    case UnityExUtility.UnityReadableType.Vector4:
                         internalMethod.Invoke(m_reff, new object[] { m_value.m_vector4 });
                         return true;
                 }

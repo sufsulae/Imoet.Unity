@@ -5,6 +5,7 @@ using UnityEditorInternal;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Imoet.Unity.Utility;
 
 namespace Imoet.UnityEditor {
     [CustomPropertyDrawer(typeof(UnityEventEx), true)]
@@ -103,9 +104,9 @@ namespace Imoet.UnityEditor {
                 methodSelector.targetObjects = objReffList;
                 if (!string.IsNullOrEmpty(propItem.methodName.stringValue))
                 {
-                    methodSelector.selectedItem = new UnityMethodItem(objReff, null);
-                    methodSelector.selectedItem.selectedParamType = new Type[] { UnityEventExUtility.UnityReadableTypeList[propItem.methodType.enumValueIndex - 1] };
-                    methodSelector.selectedItem.AssignValidMethodByName(propItem.methodName.stringValue);
+                    methodSelector.selectedItem = new UnityMethodSelectorItem(objReff, null);
+                    methodSelector.selectedItem.m_selectedParamType = new Type[] { UnityExUtility.UnityReadableTypeList[propItem.methodType.enumValueIndex - 1] };
+                    methodSelector.selectedItem._assignValidMethodByName(propItem.methodName.stringValue);
                 }
                 methodSelector.onMethodSelected = (m) => { _ms_onMethodSelected(propItem, m); };
                 methodSelector.onValidateMenuName = (obj, m) => { return _ms_onValidateMenuName(propItem, obj, m); };
@@ -118,9 +119,9 @@ namespace Imoet.UnityEditor {
             EditorGUI.BeginDisabledGroup(objReff == null);
             methodSelector.Draw(temp_uiMargin.Remove(new Rect(mRect.x, mRect.y, mRect.width, mRect.height / 2f)));
             //Value Editor
-            if (methodSelector.selectedItem != null && methodSelector.selectedItem.selectedMethod != null) {
+            if (methodSelector.selectedItem != null && methodSelector.selectedItem.m_selectedMethod != null) {
                 var item = methodSelector.selectedItem;
-                var itemMParam = item.selectedMethod.GetParameters();
+                var itemMParam = item.m_selectedMethod.GetParameters();
                 if (itemMParam.Length > 0) {
                     var itemMParamType = itemMParam[0].ParameterType;
                     EditorGUIX.__drawUnityEventValue(temp_uiMargin.Remove(new Rect(mRect.x, mRect.y + mRect.height / 2f, mRect.width, mRect.height / 2f)), propItem.value, itemMParamType);
@@ -139,7 +140,7 @@ namespace Imoet.UnityEditor {
         #endregion
 
         #region MethodSelected Callback
-        private void _ms_onMethodSelected(PropItem item, UnityMethodItem m) {
+        private void _ms_onMethodSelected(PropItem item, UnityMethodSelectorItem m) {
             if (m == null)
             {
                 item.methodName.stringValue = "";
@@ -147,13 +148,13 @@ namespace Imoet.UnityEditor {
                 item.methodType.enumValueIndex = 0;
             }
             else {
-                item.methodName.stringValue = m.selectedMethod.Name;
-                item.reff.objectReferenceValue = m.selectedObject;
-                var param = m.selectedMethod.GetParameters();
+                item.methodName.stringValue = m.m_selectedMethod.Name;
+                item.reff.objectReferenceValue = m.m_selectedObject;
+                var param = m.m_selectedMethod.GetParameters();
                 if (param.Length > 0)
                 {
                     item.paramTypePath.stringValue = param[0].ParameterType.FullName;
-                    item.methodType.enumValueIndex = (int)UnityEventExUtility.getUnityReadableType(param[0].ParameterType) + 1;
+                    item.methodType.enumValueIndex = (int)UnityExUtility.getUnityReadableType(param[0].ParameterType) + 1;
                 }
             }
             temp_inspectedProp.serializedObject.ApplyModifiedProperties();
