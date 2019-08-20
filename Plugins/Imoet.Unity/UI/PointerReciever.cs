@@ -4,7 +4,7 @@ using Imoet.Unity.UI;
 namespace Imoet.Unity {
     public abstract class PointerReciever : MonoBehaviour
     {
-        private PointerDispatcher m_dispatcher;
+        private PointerDispatcher m_dispatcher = null;
         protected PointerDispatcher dispatcher { get { return m_dispatcher; } }
 
         protected virtual void OnPointerClick(PointerEventData data) { }

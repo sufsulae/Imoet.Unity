@@ -27,6 +27,7 @@ namespace Imoet.Unity
     }
 
     public class NotEditableAttribute : PropertyAttribute { }
+    public class ReadOnlyAttribute : PropertyAttribute { }
     public class DisabledOnPlayModeAttribute : PropertyAttribute { }
     public class FullBarToggleAttribute : PropertyAttribute { }
     public class WideToggleAttribute : PropertyAttribute

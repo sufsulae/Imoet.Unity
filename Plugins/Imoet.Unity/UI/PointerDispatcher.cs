@@ -37,7 +37,6 @@ namespace Imoet.Unity.UI
         private List<PackedPointer> m_cache;
         private List<TrackedPointer> m_holdedData;
         private List<TrackedPointer> m_trackedPointer;
-        private List<RaycastResult> m_rayResult;
 
         private EventTrigger m_eventTrigger;
         private EventSystem m_eventSystem;
@@ -46,7 +45,6 @@ namespace Imoet.Unity.UI
 
         private bool m_lateStart;
         private GameObject m_lastHovered;
-        private RectTransform m_rectTransform;
         private Graphic m_graphic;
         #endregion
 
@@ -56,7 +54,6 @@ namespace Imoet.Unity.UI
             //Initialize
             instance = this;
             m_cache = new List<PackedPointer>();
-            m_rayResult = new List<RaycastResult>();
             m_ptrData = new Dictionary<int, PointerEventData>();
             m_holdedData = new List<TrackedPointer>();
             m_trackedPointer = new List<TrackedPointer>();
@@ -69,8 +66,6 @@ namespace Imoet.Unity.UI
                 m_eventTrigger = gameObject.AddComponent<EventTrigger>();
                 m_eventTrigger.hideFlags = m_showRequiredComp? HideFlags.NotEditable : HideFlags.HideInInspector;
             }
-               
-            m_rectTransform = GetComponent<RectTransform>();
             m_graphic = GetComponent<Graphic>();
             if (!m_graphic)
             {

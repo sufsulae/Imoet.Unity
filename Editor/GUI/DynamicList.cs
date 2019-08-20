@@ -6,19 +6,25 @@ using UnityEditor;
 using UnityEngine;
 
 #region Interface
-
+/// <summary>
+/// Interface to draw custom List Header
+/// </summary>
 public interface IDynamicListHeaderDrawer
 {
     float GetHeaderHeight(SerializedProperty property);
     void DrawHeader(Rect rect, SerializedProperty property);
 }
-
+/// <summary>
+/// Interface to draw custom Item List Header
+/// </summary>
 public interface IDynamicListItemHeaderDrawer
 {
     float GetItemHeaderHeight(SerializedProperty property);
     void DrawItemHeader(Rect rect, SerializedProperty property);
 }
-
+/// <summary>
+/// Interface to draw custom Item List Body
+/// </summary>
 public interface IDynamicListItemBodyDrawer
 {
     float GetItemBodyHeight(SerializedProperty property);
@@ -31,13 +37,27 @@ namespace Imoet.UnityEditor
 {
     public class DynamicList : IDynamicListHeaderDrawer, IDynamicListItemBodyDrawer, IDynamicListItemHeaderDrawer
     {
+        #region Public Property
+        /// <summary>
+        /// Set to change mode of List
+        /// </summary>
         public bool reorderable { get; set; }
 
+        /// <summary>
+        /// Interface to make a custom <see cref="drawerHeader"/>
+        /// </summary>
         public IDynamicListHeaderDrawer drawerHeader { get; set; }
+        /// <summary>
+        /// Interface to make a custom <see cref="drawerItemHeader"/>
+        /// </summary>
         public IDynamicListItemHeaderDrawer drawerItemHeader { get; set; }
+        /// <summary>
+        /// Interface to make a custom <see cref="drawerItemBody"/>
+        /// </summary>
         public IDynamicListItemBodyDrawer drawerItemBody { get; set; }
+        #endregion
 
-        //Private Variable
+        #region Private Variable
         private readonly SerializedProperty m_prop;
         private static Style m_style = null;
 
@@ -53,13 +73,22 @@ namespace Imoet.UnityEditor
 
         private Rect m_headerRect = default(Rect);
         private Rect m_bodyRect = default(Rect);
+        #endregion
 
-        //Default Drawer
         #region Default Event Drawer
+        /// <summary>
+        /// Default Event Draver (DrawHeader). Use this method to fallback into default layout
+        /// </summary>
+        /// <param name="rect"></param>
+        /// <param name="property"></param>
         public void DrawHeader(Rect rect, SerializedProperty property) {
             EditorGUI.LabelField(rect, property.displayName, m_style.headerLabel);
         }
-
+        /// <summary>
+        /// Default Event Drawer (DrawItemHeader). Use this method to fallback into default layout
+        /// </summary>
+        /// <param name="rect"></param>
+        /// <param name="property"></param>
         public void DrawItemHeader(Rect rect, SerializedProperty property)
         {
             if (reorderable)
@@ -69,7 +98,11 @@ namespace Imoet.UnityEditor
                     property.isExpanded = !property.isExpanded;
             }   
         }
-
+        /// <summary>
+        /// Default Event Draver (DrawItemBody). Use this method to fallback into default layout
+        /// </summary>
+        /// <param name="rect"></param>
+        /// <param name="property"></param>
         public void DrawItemBody(Rect rect, SerializedProperty property)
         {
             int inspectedDepth = property.depth;
@@ -92,17 +125,29 @@ namespace Imoet.UnityEditor
                 }
             }
         }
-
+        /// <summary>
+        /// Default Event Draver (GetHeaderHeight). Use this method to fallback into default layout 
+        /// </summary>
+        /// <param name="property"></param>
+        /// <returns></returns>
         public float GetHeaderHeight(SerializedProperty property)
         {
             return 17f;
         }
-
+        /// <summary>
+        /// Default Event Draver (GetItemHeaderHeight). Use this method to fallback into default layout
+        /// </summary>
+        /// <param name="property"></param>
+        /// <returns></returns>
         public float GetItemHeaderHeight(SerializedProperty property)
         {
             return 17f;
         }
-
+        /// <summary>
+        /// Default Event Draver (GetItemBodyHeight). Use this method to fallback into default layout
+        /// </summary>
+        /// <param name="property"></param>
+        /// <returns></returns>
         public float GetItemBodyHeight(SerializedProperty property)
         {
             if (property.isExpanded && m_prop.arraySize > 0) {
@@ -113,8 +158,12 @@ namespace Imoet.UnityEditor
 
         #endregion Default Event Drawer
 
-        //Constructor
-        public DynamicList(SerializedProperty prop)
+        #region Constructor
+        /// <summary>
+        /// Create a new <see cref="DynamicList"/> to rendering a list
+        /// </summary>
+        /// <param name="prop">Property to render. this property must be array</param>
+        public DynamicList(SerializedProperty prop, bool reorderable = false)
         {
             if (prop == null) {
                 throw new NullReferenceException("Property is Null");
@@ -130,11 +179,16 @@ namespace Imoet.UnityEditor
             drawerItemBody = this;
             drawerItemHeader = this;
 
+            this.reorderable = reorderable;
+
             m_items = new List<Item>();
         }
+        #endregion
 
-        //Public Function
         #region Public Function
+        /// <summary>
+        /// Add a new element into list
+        /// </summary>
         public void Add()
         {
             m_prop.InsertArrayElementAtIndex(m_prop.arraySize);
@@ -145,7 +199,10 @@ namespace Imoet.UnityEditor
             nItem.isExpanded = !reorderable;
             m_items.Add(nItem);
         }
-
+        /// <summary>
+        /// Delete specific element of list
+        /// </summary>
+        /// <param name="idx">element's index that you want to remove</param>
         public void Delete(int idx)
         {
             m_prop.DeleteArrayElementAtIndex(idx);
@@ -155,7 +212,11 @@ namespace Imoet.UnityEditor
                 m_items[i].prop = m_prop.GetArrayElementAtIndex(i);
             }
         }
-
+        /// <summary>
+        /// Move / Swap position of element of list
+        /// </summary>
+        /// <param name="src">source index of element</param>
+        /// <param name="dst">destination index of element</param>
         public void Move(int src, int dst)
         {
             m_prop.MoveArrayElement(m_selectedItem.id, dst);
@@ -167,7 +228,9 @@ namespace Imoet.UnityEditor
                 m_items[i].prop.isExpanded = m_items[i].isExpanded;
             }
         }
-
+        /// <summary>
+        /// Draw List into GUI. Everything is already managed so you just to call this method after initialization
+        /// </summary>
         public void Draw()
         {
             //Check if property is null
@@ -176,7 +239,7 @@ namespace Imoet.UnityEditor
                 Debug.LogError("Trying to draw nulled property, this is not allowed");
                 return;
             }
-
+            m_prop.isExpanded = false;
             //Style
             if (m_style == null)
             {
@@ -226,16 +289,16 @@ namespace Imoet.UnityEditor
             else
             {
                 //Draw Empty
-                EditorGUILayout.BeginVertical(m_style.body);
-                EditorGUILayout.PrefixLabel("List Is Empty");
-                EditorGUILayout.EndVertical();
+                var emptyRect = GUILayoutUtility.GetRect(0, 22f);
+                GUI.Box(emptyRect, "", m_style.body);
+                var labelRect = new Rect(emptyRect.x + 4f, emptyRect.y + 2f, emptyRect.width-8f, emptyRect.height - 4f);
+                EditorGUI.LabelField(labelRect, "List is Empty");
             }
             EditorGUILayout.Space();
         }
 
         #endregion Public Function
 
-        //Private Function
         #region Private Function
         private void _drawOnEvent(Event e)
         {
@@ -380,12 +443,11 @@ namespace Imoet.UnityEditor
         private Rect _getBodyRect()
         {
             var res = 0.0f;
-            for (int i = 0; i < m_items.Count; i++)
-            {
-                res += drawerItemHeader.GetItemHeaderHeight(m_items[i].prop) + drawerItemBody.GetItemBodyHeight(m_items[i].prop);
+            for (int i = 0; i < m_items.Count; i++) {
+                res += drawerItemHeader.GetItemHeaderHeight(m_items[i].prop) + drawerItemBody.GetItemBodyHeight(m_items[i].prop) + 2f;
             }
 
-            return GUILayoutUtility.GetRect(0, res + 15f);
+            return GUILayoutUtility.GetRect(0, res + 6f);
         }
 
         private void _deleteItem(Item item)
@@ -394,8 +456,7 @@ namespace Imoet.UnityEditor
             m_prop.DeleteArrayElementAtIndex(idx);
             m_prop.serializedObject.ApplyModifiedProperties();
             m_items.RemoveAt(idx);
-            for (int i = idx; i < m_items.Count; i++)
-            {
+            for (int i = idx; i < m_items.Count; i++) {
                 m_items[i].parent = this;
                 m_items[i].prop = m_prop.GetArrayElementAtIndex(i);
             }
@@ -403,6 +464,7 @@ namespace Imoet.UnityEditor
 
         #endregion Private Function
 
+        #region Klass
         private class Item
         {
             public int id;
@@ -462,7 +524,7 @@ namespace Imoet.UnityEditor
                     return;
                 }
                 if (prop.isExpanded){
-                    parent.drawerItemBody.DrawItemBody(m_bodyRect, prop);
+                    parent.drawerItemBody.DrawItemBody(new Rect(m_bodyRect.x + 4f, m_bodyRect.y + 2f, m_bodyRect.width-8f, m_bodyRect.height-4f), prop);
                 }
             }
 
@@ -495,5 +557,6 @@ namespace Imoet.UnityEditor
                 normalTextMiddle.alignment = TextAnchor.MiddleCenter;
             }
         }
+        #endregion
     }
 }

@@ -7,7 +7,7 @@ namespace Imoet.UnityEditor
     [CustomPropertyDrawer(typeof(WideToggleAttribute))]
     public class WideToggleDrawer : PropertyDrawer
     {
-        public override void OnGUI(UnityEngine.Rect position, SerializedProperty property, GUIContent label)
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             if (property.propertyType != SerializedPropertyType.Boolean)
             {
@@ -21,7 +21,7 @@ namespace Imoet.UnityEditor
     [CustomPropertyDrawer(typeof(FullBarToggleAttribute))]
     public class FullBarToggleDrawer : PropertyDrawer
     {
-        public override void OnGUI(UnityEngine.Rect position, SerializedProperty property, GUIContent label)
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             if (property.propertyType != SerializedPropertyType.Boolean)
             {
@@ -50,7 +50,7 @@ namespace Imoet.UnityEditor
                 return EditorGUI.GetPropertyHeight(property);
             }
         }
-        public override void OnGUI(UnityEngine.Rect position, SerializedProperty property, GUIContent label)
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             if (property.propertyType != SerializedPropertyType.Boolean)
             {
@@ -60,7 +60,7 @@ namespace Imoet.UnityEditor
             ExeButtonAttribute attr = attribute as ExeButtonAttribute;
             if (!string.IsNullOrEmpty(attr.methodName))
             {
-                UnityEngine.Object obj = property.serializedObject.targetObject;
+                Object obj = property.serializedObject.targetObject;
                 MethodInfo mInfo = obj.GetType().GetMethod(attr.methodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                 if (mInfo != null)
                 {
@@ -132,7 +132,7 @@ namespace Imoet.UnityEditor
             }
             return EditorGUI.GetPropertyHeight(property, label, true);
         }
-        public override void OnGUI(UnityEngine.Rect position, SerializedProperty property, GUIContent label)
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             if (isInspected && !isShown)
             {
@@ -177,7 +177,7 @@ namespace Imoet.UnityEditor
             }
             return EditorGUI.GetPropertyHeight(property, label, true);
         }
-        public override void OnGUI(UnityEngine.Rect position, SerializedProperty property, GUIContent label)
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             if (isInspected && !isShown)
             {
@@ -222,7 +222,7 @@ namespace Imoet.UnityEditor
             }
             return EditorGUI.GetPropertyHeight(property, label, true);
         }
-        public override void OnGUI(UnityEngine.Rect position, SerializedProperty property, GUIContent label)
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             if (isInspected && !isShown)
             {
@@ -279,7 +279,7 @@ namespace Imoet.UnityEditor
             }
             return EditorGUI.GetPropertyHeight(property, label, true);
         }
-        public override void OnGUI(UnityEngine.Rect position, SerializedProperty property, GUIContent label)
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             if (isInspected && !isShown)
             {
@@ -367,7 +367,7 @@ namespace Imoet.UnityEditor
             }
             return EditorGUI.GetPropertyHeight(property, label, true);
         }
-        public override void OnGUI(UnityEngine.Rect position, SerializedProperty property, GUIContent label)
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             if (isInspected && !isShown)
             {
@@ -380,7 +380,7 @@ namespace Imoet.UnityEditor
     [CustomPropertyDrawer(typeof(DisabledOnPlayModeAttribute))]
     public class DisabledOnPlayModeAttributeDrawer : PropertyDrawer
     {
-        public override void OnGUI(UnityEngine.Rect position, SerializedProperty property, GUIContent label)
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             EditorGUIX.DisabledProperty(position, property, EditorApplication.isPlayingOrWillChangePlaymode);
         }
@@ -388,12 +388,20 @@ namespace Imoet.UnityEditor
     [CustomPropertyDrawer(typeof(NotEditableAttribute))]
     public class NotEditableAttributeDrawer : PropertyDrawer
     {
-        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
-        {
-            return EditorGUI.GetPropertyHeight(property, true);
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label) {
+            return EditorGUI.GetPropertyHeight(property, new GUIContent(),true);
         }
-        public override void OnGUI(UnityEngine.Rect position, SerializedProperty property, GUIContent label)
-        {
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
+            EditorGUIX.DisabledProperty(position, property, true);
+        }
+    }
+    [CustomPropertyDrawer(typeof(ReadOnlyAttribute))]
+    public class ReadOnlyAttributeDrawer : PropertyDrawer
+    {
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label) {
+            return EditorGUI.GetPropertyHeight(property, new GUIContent(), true);
+        }
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
             EditorGUIX.DisabledProperty(position, property, true);
         }
     }

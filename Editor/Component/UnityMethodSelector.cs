@@ -1,68 +1,97 @@
-﻿using Imoet.Unity.Events;
+﻿//Imoet UnityMethodSelector
+//Copyright Yusuf Sulaiman (C) 2019 <yusufxh@ymail.com>
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
+using Imoet.Unity.Utility;
 using Type = System.Type;
 
 namespace Imoet.UnityEditor
 {
     public sealed class UnityMethodSelector
     {
+        /// <summary>
+        /// List of object that you want to inspect
+        /// </summary>
         public IEnumerable<Object> targetObjects { get; set; }
 
+        /// <summary>
+        /// Type of method parameter that you want to inspect
+        /// </summary>
         public IEnumerable<Type> targetMethodParamType
         {
             get { return m_inspectedParamType; }
             set { m_inspectedParamType = value; }
         }
-
+        /// <summary>
+        /// Type of returned value of method that you want to inspect
+        /// </summary>
         public IEnumerable<Type> targetMethodReturnType
         {
             get { return m_inspectedReturnType; }
             set { m_inspectedReturnType = value; }
         }
 
-        public UnityMethodItem selectedItem { get; set; }
+        /// <summary>
+        /// Selected valid MethodItem
+        /// </summary>
+        public UnityMethodSelectorItem selectedItem { get; set; }
 
+        /// <summary>
+        /// Binding rule for search method
+        /// </summary>
         public BindingFlags binding
         {
             get { return m_binding; }
             set { m_binding = value; }
         }
 
+        /// <summary>
+        /// Maximum Number of inspectedParameter
+        /// </summary>
         public int maxInspectedParameter
         {
             get { return m_maxNumParam; }
             set { m_maxNumParam = value; }
         }
 
-        public System.Action<UnityMethodItem> onMethodSelected { get; set; }
+        /// <summary>
+        /// Callback when valid method has been selected
+        /// </summary>
+        public System.Action<UnityMethodSelectorItem> onMethodSelected { get; set; }
+        /// <summary>
+        /// Callback when the class validated the method. this also can be used to determine which method that you want to include to menu pool
+        /// </summary>
         public System.Func<Object, MethodInfo, bool> onValidateMethod { get; set; }
-        public System.Func<Object[]> onPopulateObjects { get; set; }
+        /// <summary>
+        /// Callback when the class is going to populate methods for the menu. this also can be used to decide which object that should be included or not
+        /// </summary>
+        public System.Func<IEnumerable<Object>,IEnumerable<Object>> onPopulateObjects { get; set; }
+        /// <summary>
+        /// Callback when DropDown menu is about to show. this also can be used to manipulate method name that represented in the menu
+        /// </summary>
         public System.Func<Object, MethodInfo, string> onValidateMenuName { get; set; }
 
-        private IEnumerable<Type> m_inspectedParamType = UnityEventExUtility.UnityReadableTypeList;
+        private IEnumerable<Type> m_inspectedParamType = UnityExUtility.UnityReadableTypeList;
         private IEnumerable<Type> m_inspectedReturnType = new Type[] { typeof(void) };
         private int m_maxNumParam = 1;
         private BindingFlags m_binding = BindingFlags.Instance | BindingFlags.Public;
         private GenericMenu m_menu;
         private static Style m_style;
 
-        //Private Function
+        #region Private Function
         private void _onMenuSelected(object item)
         {
-            selectedItem = (UnityMethodItem)item;
-            if (onMethodSelected != null)
-            {
+            selectedItem = (UnityMethodSelectorItem)item;
+            if (onMethodSelected != null) {
                 onMethodSelected(selectedItem);
             }
         }
 
         private bool _isValid(IEnumerable<Type> checker, Type type)
         {
-            foreach (Type t in checker)
-            {
+            foreach (Type t in checker) {
                 if (t.IsAssignableFrom(type))
                 {
                     return true;
@@ -100,7 +129,7 @@ namespace Imoet.UnityEditor
         {
             if (onPopulateObjects != null)
             {
-                targetObjects = onPopulateObjects();
+                targetObjects = onPopulateObjects(targetObjects);
             }
 
             if (targetObjects == null)
@@ -115,18 +144,13 @@ namespace Imoet.UnityEditor
                 foreach (MethodInfo objMethodInfo in objMethods)
                 {
                     bool valid = false;
-                    if (onValidateMethod != null)
-                    {
+                    valid = _defaultValidatingMethod(obj, objMethodInfo);
+                    if (valid && onValidateMethod != null)  {
                         valid = onValidateMethod(obj, objMethodInfo);
                     }
-                    else
-                    {
-                        valid = _defaultValidatingMethod(obj, objMethodInfo);
-                    }
-
                     if (valid)
                     {
-                        var validMethods = new UnityMethodItem(obj, objMethodInfo);
+                        var validMethods = new UnityMethodSelectorItem(obj, objMethodInfo);
                         string menuPath = null;
                         if (onValidateMenuName != null)
                         {
@@ -134,7 +158,7 @@ namespace Imoet.UnityEditor
                         }
                         else
                         {
-                            menuPath = validMethods.selectedObjectType.Name + "/" + validMethods.selectedMethod.Name;
+                            menuPath = validMethods.m_selectedObjectType.Name + "/" + validMethods.m_selectedMethod.Name;
                         }
 
                         m_menu.AddItem(new GUIContent(menuPath), false, _onMenuSelected, validMethods);
@@ -142,7 +166,13 @@ namespace Imoet.UnityEditor
                 }
             }
         }
+#endregion
+
         //Public Function
+        /// <summary>
+        /// Draw the GUI
+        /// </summary>
+        /// <param name="rect"></param>
         public void Draw(Rect rect)
         {
             if (m_style == null)
@@ -151,17 +181,19 @@ namespace Imoet.UnityEditor
             }
 
             string buttonName = "None";
-            if (selectedItem != null && selectedItem.selectedMethod != null)
+            if (selectedItem != null && selectedItem.m_selectedMethod != null)
             {
-                string methodName = selectedItem.selectedMethod.Name.Replace("set_", "").Replace("get_", "");
-                buttonName = selectedItem.selectedMethod.DeclaringType.Name + "." + methodName;
+                string methodName = selectedItem.m_selectedMethod.Name.Replace("set_", "").Replace("get_", "");
+                buttonName = selectedItem.m_selectedMethod.DeclaringType.Name + "." + methodName;
             }
             if (GUI.Button(rect, buttonName, m_style.dropDown))
             {
                 ShowMenuContext();
             }
         }
-
+        /// <summary>
+        /// Forcely Show the Dropdown Menu. this method can be used when you want to re-show the menu when its not valid anymore
+        /// </summary>
         public void ShowMenuContext()
         {
             m_menu = new GenericMenu();
@@ -171,88 +203,101 @@ namespace Imoet.UnityEditor
             m_menu.ShowAsContext();
         }
 
-        private class Style
-        {
+        private class Style {
             public GUIStyle dropDown = new GUIStyle(EditorStyles.popup);
         }
     }
 
-    public sealed class UnityMethodItem
+    /// <summary>
+    /// Class that representate the selected method of <see cref="UnityMethodSelector"/>
+    /// </summary>
+    public sealed class UnityMethodSelectorItem
     {
-        public UnityMethodItem(Object obj, MethodInfo method)
+        internal UnityMethodSelectorItem(Object obj, MethodInfo method)
         {
-            selectedObject = obj;
-            selectedMethod = method;
-            if (selectedObject != null)
-            {
-                selectedObjectType = selectedObject.GetType();
+            m_selectedObject = obj;
+            m_selectedMethod = method;
+            if (m_selectedObject != null) {
+                m_selectedObjectType = m_selectedObject.GetType();
             }
-            if (method != null)
-            {
-                selectedReturnType = method.ReturnParameter.ParameterType;
+            if (method != null) {
+                m_selectedReturnType = method.ReturnParameter.ParameterType;
                 ParameterInfo[] param = method.GetParameters();
                 int paramInt = param.Length;
-                selectedParamType = new Type[paramInt];
+                m_selectedParamType = new Type[paramInt];
                 for (int i = 0; i < paramInt; i++)
                 {
-                    selectedParamType[i] = param[i].ParameterType;
+                    m_selectedParamType[i] = param[i].ParameterType;
                 }
             }
         }
-        public Object selectedObject;
-        public Type selectedObjectType;
-        public MethodInfo selectedMethod;
-        public Type[] selectedParamType;
-        public Type selectedReturnType;
+        internal Object m_selectedObject;
+        internal Type m_selectedObjectType;
+        internal MethodInfo m_selectedMethod;
+        internal Type[] m_selectedParamType;
+        internal Type m_selectedReturnType;
 
-        public bool CheckValidation(BindingFlags binding = BindingFlags.Instance | BindingFlags.Public)
+        /// <summary>
+        /// Selected inspected object
+        /// </summary>
+        public Object selectedObject { get { return m_selectedObject; } }
+        /// <summary>
+        /// Selected method of the object
+        /// </summary>
+        public MethodInfo selectedMethod { get { return m_selectedMethod; } }
+        /// <summary>
+        /// Selected parameters of method
+        /// </summary>
+        public Type[] selectedParamType { get { return m_selectedParamType; } }
+        /// <summary>
+        /// Selected returnType of method
+        /// </summary>
+        public Type selectedReturnType { get { return m_selectedReturnType; } }
+
+        internal bool _checkValidation(BindingFlags binding = BindingFlags.Instance | BindingFlags.Public)
         {
-            if (selectedObject == null || selectedMethod == null)
-            {
+            if (m_selectedObject == null || m_selectedMethod == null) {
                 return false;
             }
 
-            MethodInfo[] objMethodList = selectedObjectType.GetMethods(binding);
-            foreach (MethodInfo mInfo in objMethodList)
-            {
-                if (mInfo == selectedMethod)
-                {
+            MethodInfo[] objMethodList = m_selectedObjectType.GetMethods(binding);
+            foreach (MethodInfo mInfo in objMethodList) {
+                if (mInfo == m_selectedMethod) {
                     return true;
                 }
             }
             return false;
         }
 
-        public bool AssignValidMethodByName(string methodName, BindingFlags binding = BindingFlags.Instance | BindingFlags.Public)
+        internal bool _assignValidMethodByName(string methodName, BindingFlags binding = BindingFlags.Instance | BindingFlags.Public)
         {
-            
-            if (selectedObject == null || string.IsNullOrEmpty(methodName))
+            if (m_selectedObject == null || string.IsNullOrEmpty(methodName))
                 return false;
-            MethodInfo[] obMethodList = selectedObjectType.GetMethods(binding);
+            MethodInfo[] obMethodList = m_selectedObjectType.GetMethods(binding);
             MethodInfo _res = null;
             foreach (MethodInfo mInfo in obMethodList)
             {
                 if (mInfo.Name == methodName)
                 {
                     bool _ok = true;
-                    if (selectedReturnType != null)
+                    if (m_selectedReturnType != null)
                     {
                         Type returnType = mInfo.ReturnParameter.ParameterType;
-                        if ((!selectedReturnType.IsEnum && !returnType.IsEnum) &&
-                           !selectedReturnType.IsAssignableFrom(returnType)) {
+                        if ((!m_selectedReturnType.IsEnum && !returnType.IsEnum) &&
+                           !m_selectedReturnType.IsAssignableFrom(returnType)) {
                             _ok = false;
                         }
                     }
-                    if (selectedParamType != null)
+                    if (m_selectedParamType != null)
                     {
                         ParameterInfo[] paramInfoList = mInfo.GetParameters();
                         int paramInfoListLen = paramInfoList.Length;
-                        int selectedParamTypeLen = selectedParamType.Length;
+                        int selectedParamTypeLen = m_selectedParamType.Length;
                         if (selectedParamTypeLen == paramInfoListLen) {
                             for (int i = 0; i < paramInfoListLen; i++)
                             {
-                                if ((!selectedParamType[i].IsEnum && !paramInfoList[i].ParameterType.IsEnum) &&
-                                    !selectedParamType[i].IsAssignableFrom(paramInfoList[i].ParameterType)) {
+                                if ((!m_selectedParamType[i].IsEnum && !paramInfoList[i].ParameterType.IsEnum) &&
+                                    !m_selectedParamType[i].IsAssignableFrom(paramInfoList[i].ParameterType)) {
                                     _ok = false;
                                 }
                             }
@@ -265,7 +310,7 @@ namespace Imoet.UnityEditor
                 }
             }
             if (_res != null)
-                selectedMethod = _res;
+                m_selectedMethod = _res;
             return _res != null;
         }
     }

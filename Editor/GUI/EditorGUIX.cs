@@ -1,8 +1,8 @@
 ﻿// Imoet Unity Editor Tool
 // Copyright Yusuf Sulaiman (C) 2017 <ucupxh@gmail.com>
+using Imoet.Unity.Utility;
 using UnityEditor;
 using UnityEngine;
-using Imoet.Unity.Events;
 using Sys = System;
 
 namespace Imoet.UnityEditor
@@ -94,19 +94,78 @@ namespace Imoet.UnityEditor
             EditorGUI.PropertyField(rect, property, true);
             EditorGUI.EndDisabledGroup();
         }
+        internal static void __drawCustomUnityValue(Rect rect, SerializedProperty property, Sys.Type type) {
+            if (property == null || type == null)
+                return;
+            var unityType = UnityExUtility.getUnityReadableType(type);
+            if (unityType == UnityExUtility.UnityReadableType.Void)
+                return;
 
-        internal static void __drawUnityEventValue(Rect rect, SerializedProperty property, System.Type type) {
-            var unityType = UnityEventExUtility.getUnityReadableType(type);
-            if (property == null ||unityType <= (int)UnityEventExUtility.UnityReadableType.Void)
+            var v = new Vector4();
+            switch (unityType)
+            {
+                case UnityExUtility.UnityReadableType.Boolean:
+                    bool b = property.boolValue;
+                    EditorGUI.BeginChangeCheck();
+                    b = EditorGUI.Toggle(rect, b, EditorStyles.miniButton);
+                    EditorGUI.LabelField(rect, b ? "True" : "False", UnityEditorSkin.centeredLabel);
+                    if (EditorGUI.EndChangeCheck())
+                        property.boolValue = b;
+                    break;
+                case UnityExUtility.UnityReadableType.Quaternion:
+                    Quaternion q = property.quaternionValue;
+                    v = new Vector4(q.x, q.y, q.z, q.w);
+                    EditorGUI.BeginChangeCheck();
+                    v = EditorGUI.Vector4Field(rect, "", v);
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        q.Set(v.x, v.y, v.z, v.w);
+                        property.quaternionValue = q;
+                    }
+                    break;
+                case UnityExUtility.UnityReadableType.Rect:
+                    Rect r = property.rectValue;
+                    v = new Vector4(r.x, r.y, r.width, r.height);
+                    EditorGUI.BeginChangeCheck();
+                    v = EditorGUI.Vector4Field(rect, "", v);
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        r.Set(v.x, v.y, v.z, v.w);
+                        property.rectValue = r;
+                    }
+                    break;
+                case UnityExUtility.UnityReadableType.Enum:
+                    string[] EnumNameList = Sys.Enum.GetNames(type);
+                    int selectedValue = property.intValue;
+                    if (selectedValue >= EnumNameList.Length)
+                        selectedValue = 0;
+                    EditorGUI.BeginChangeCheck();
+                    selectedValue = EditorGUI.Popup(rect, selectedValue, EnumNameList);
+                    if (EditorGUI.EndChangeCheck())
+                        property.intValue = selectedValue;
+                    break;
+                case UnityExUtility.UnityReadableType.UnityObject:
+                    Object inspectedValueObject = property.objectReferenceValue;
+                    inspectedValueObject = EditorGUI.ObjectField(rect, inspectedValueObject, type, true);
+                    property.objectReferenceValue = inspectedValueObject;
+                    break;
+                default:
+                    EditorGUI.PropertyField(rect, property, new GUIContent(""));
+                    break;
+            }
+        }
+        internal static void __drawUnityEventValue(Rect rect, SerializedProperty property, Sys.Type type, string prefix = "m_") {
+            var unityType = UnityExUtility.getUnityReadableType(type);
+            if (property == null ||unityType <= (int)UnityExUtility.UnityReadableType.Void)
                 return;
             
             SerializedProperty prop = null;
             switch (unityType) {
-                case UnityEventExUtility.UnityReadableType.UnityObject:
-                    prop = property.FindPropertyRelative("m_unityObject");
+                case UnityExUtility.UnityReadableType.UnityObject:
+                    prop = property.FindPropertyRelative(prefix + "unityObject");
                     break;
-                case UnityEventExUtility.UnityReadableType.Enum:
-                    prop = property.FindPropertyRelative("m_enum");
+                case UnityExUtility.UnityReadableType.Enum:
+                    prop = property.FindPropertyRelative(prefix + "enum");
                     break;
                 default:
                     string tLower = "";
@@ -133,12 +192,17 @@ namespace Imoet.UnityEditor
                             break;
                     }
                     tLower = tLower.ToLower();
-                    prop = property.FindPropertyRelative("m_" + tLower);
+                    Debug.Log(prefix + tLower);
+                    prop = property.FindPropertyRelative(prefix + tLower);
                     break;
             }
+
+            if (prop == null)
+                prop = property;
+
             var v = new Vector4();
             switch (unityType) {
-                case UnityEventExUtility.UnityReadableType.Boolean:
+                case UnityExUtility.UnityReadableType.Boolean:
                     bool b = prop.boolValue;
                     EditorGUI.BeginChangeCheck();
                     b = EditorGUI.Toggle(rect, b, EditorStyles.miniButton);
@@ -146,7 +210,7 @@ namespace Imoet.UnityEditor
                     if (EditorGUI.EndChangeCheck())
                         prop.boolValue = b;
                     break;
-                case UnityEventExUtility.UnityReadableType.Quaternion:
+                case UnityExUtility.UnityReadableType.Quaternion:
                     Quaternion q = prop.quaternionValue;
                     v = new Vector4(q.x, q.y, q.z, q.w);
                     EditorGUI.BeginChangeCheck();
@@ -157,7 +221,7 @@ namespace Imoet.UnityEditor
                         prop.quaternionValue = q;
                     }
                     break;
-                case UnityEventExUtility.UnityReadableType.Rect:
+                case UnityExUtility.UnityReadableType.Rect:
                     Rect r = prop.rectValue;
                     v = new Vector4(r.x, r.y, r.width, r.height);
                     EditorGUI.BeginChangeCheck();
@@ -168,7 +232,7 @@ namespace Imoet.UnityEditor
                         prop.rectValue = r;
                     }
                     break;
-                case UnityEventExUtility.UnityReadableType.Enum:
+                case UnityExUtility.UnityReadableType.Enum:
                     string[] EnumNameList = Sys.Enum.GetNames(type);
                     int selectedValue = prop.intValue;
                     if (selectedValue >= EnumNameList.Length)
@@ -178,7 +242,7 @@ namespace Imoet.UnityEditor
                     if (EditorGUI.EndChangeCheck())
                         prop.intValue = selectedValue;
                     break;
-                case UnityEventExUtility.UnityReadableType.UnityObject:
+                case UnityExUtility.UnityReadableType.UnityObject:
                     Object inspectedValueObject = prop.objectReferenceValue;
                     inspectedValueObject = EditorGUI.ObjectField(rect, inspectedValueObject, type, true);
                     prop.objectReferenceValue = inspectedValueObject;
