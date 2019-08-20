@@ -25,9 +25,12 @@ namespace Imoet.Unity.UI
                 return l;
             }
         }
+        public Camera eventCamera { get { return m_eventCamera; } }
         #endregion
 
         #region Private Field
+        [SerializeField]
+        private Camera m_eventCamera;
         [SerializeField]
         private bool m_showRequiredComp;
 
@@ -39,7 +42,6 @@ namespace Imoet.Unity.UI
         private EventTrigger m_eventTrigger;
         private EventSystem m_eventSystem;
         private Canvas m_canvas;
-        private Camera m_mainCamera;
         private Dictionary<int, PointerEventData> m_ptrData;
 
         private bool m_lateStart;
@@ -53,13 +55,15 @@ namespace Imoet.Unity.UI
         {
             //Initialize
             instance = this;
-            m_mainCamera = Camera.main;
             m_cache = new List<PackedPointer>();
             m_rayResult = new List<RaycastResult>();
             m_ptrData = new Dictionary<int, PointerEventData>();
             m_holdedData = new List<TrackedPointer>();
             m_trackedPointer = new List<TrackedPointer>();
             m_eventTrigger = GetComponent<EventTrigger>();
+
+            if (m_eventCamera == null)
+                m_eventCamera = Camera.main;
             if (!m_eventTrigger)
             {
                 m_eventTrigger = gameObject.AddComponent<EventTrigger>();
@@ -250,11 +254,13 @@ namespace Imoet.Unity.UI
         }
 
         private GameObject _getPointerObj(PointerEventData data, bool checkPressed = false) {
+            if (data == null)
+                return null;
             Ray ray;
             if (checkPressed)
-                ray = Camera.main.ScreenPointToRay(data.pressPosition);
+                ray = m_eventCamera.ScreenPointToRay(data.pressPosition);
             else
-                ray = Camera.main.ScreenPointToRay(data.position);
+                ray = m_eventCamera.ScreenPointToRay(data.position);
             GameObject tgt = null;
 
             RaycastHit rayHit;

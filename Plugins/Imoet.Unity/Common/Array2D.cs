@@ -20,13 +20,13 @@ namespace Imoet.Unity {
             {
                 if (row > rowCount - 1 || coloum > coloumCount - 1)
                     throw new IndexOutOfRangeException("row or coloum value is out of range");
-                return get_data[coloum + row * rowCount];
+                return get_data[coloum + row * coloumCount];
             }
             set
             {
                 if (row > rowCount - 1 || coloum > coloumCount - 1)
                     throw new IndexOutOfRangeException("row or coloum value is out of range");
-                get_data[coloum + row * rowCount] = value;
+                get_data[coloum + row * coloumCount] = value;
             }
         }
 

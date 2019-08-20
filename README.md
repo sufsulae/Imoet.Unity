@@ -1,2 +1,2 @@
 # Imoet-Unity
-Imoet integration for Unity Engine
+Imoet code for Unity Engine
