@@ -102,7 +102,7 @@ namespace Imoet.UnityEditor
 
         private bool _defaultValidatingMethod(Object obj, MethodInfo method)
         {
-            if (method.DeclaringType == obj.GetType() && 
+            if (method.DeclaringType.IsAssignableFrom(obj.GetType()) && 
                 method.GetCustomAttributes(typeof(System.ObsoleteAttribute), true).Length == 0)
             {
                 Type objMethodReturnType = method.ReturnParameter.ParameterType;
@@ -113,8 +113,7 @@ namespace Imoet.UnityEditor
                     {
                         foreach (ParameterInfo param in objMethodParams)
                         {
-                            if (!_isValid(m_inspectedParamType, param.ParameterType))
-                            {
+                            if (!_isValid(m_inspectedParamType, param.ParameterType)) {
                                 return false;
                             }
                         }

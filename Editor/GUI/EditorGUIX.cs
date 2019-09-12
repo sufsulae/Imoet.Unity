@@ -35,18 +35,14 @@ namespace Imoet.UnityEditor
 
         public static bool ToogleWideBar(Rect rect, SerializedProperty property, string onDisableText = "Disabled", string onEnableText = "Enabled")
         {
-            if (property.propertyType == SerializedPropertyType.Boolean)
-            {
-                if (property.hasMultipleDifferentValues)
-                {
-                    if (!EditorGUIX.ToogleWideBar(rect, true, property.displayName, "-", "-"))
-                    {
+            if (property.propertyType == SerializedPropertyType.Boolean) {
+                if (property.hasMultipleDifferentValues) {
+                    if (!ToogleWideBar(rect, true, property.displayName, "-", "-")) {
                         property.boolValue = true;
                     }
                 }
-                else
-                {
-                    property.boolValue = EditorGUIX.ToogleWideBar(rect, property.boolValue, property.displayName);
+                else {
+                    property.boolValue = ToogleWideBar(rect, property.boolValue, property.displayName);
                 }
             }
             return property.boolValue;
@@ -82,8 +78,8 @@ namespace Imoet.UnityEditor
             bool temp = value;
             string text = !temp ? onDisableText : onEnableText;
             EditorGUI.PrefixLabel(rect, content);
-            rect.x += EditorGUIUtility.labelWidth;
-            rect.width -= EditorGUIUtility.labelWidth;
+            rect.x += EditorGUIUtility.labelWidth - 5 * GUI.depth;
+            rect.width -= EditorGUIUtility.labelWidth + 5 * GUI.depth;
             temp = GUI.Toggle(rect, temp, new GUIContent(text, content.tooltip), button);
             return temp;
         }
@@ -94,7 +90,8 @@ namespace Imoet.UnityEditor
             EditorGUI.PropertyField(rect, property, true);
             EditorGUI.EndDisabledGroup();
         }
-        internal static void __drawCustomUnityValue(Rect rect, SerializedProperty property, Sys.Type type) {
+
+        internal static void __drawCustomUnityValue(Rect rect, SerializedProperty property, Sys.Type type, string label = "") {
             if (property == null || type == null)
                 return;
             var unityType = UnityExUtility.getUnityReadableType(type);
@@ -112,26 +109,40 @@ namespace Imoet.UnityEditor
                     if (EditorGUI.EndChangeCheck())
                         property.boolValue = b;
                     break;
+
                 case UnityExUtility.UnityReadableType.Quaternion:
-                    Quaternion q = property.quaternionValue;
-                    v = new Vector4(q.x, q.y, q.z, q.w);
+                    var quat = property.quaternionValue;
+                    var qVal = new float[] { quat.x, quat.y, quat.z, quat.w };
+                    var qLable = new GUIContent[] { new GUIContent("X"), new GUIContent("Y"), new GUIContent("Z"), new GUIContent("W") };
                     EditorGUI.BeginChangeCheck();
-                    v = EditorGUI.Vector4Field(rect, "", v);
+                    EditorGUI.MultiFloatField(rect, new GUIContent(label), qLable, qVal);
                     if (EditorGUI.EndChangeCheck())
                     {
-                        q.Set(v.x, v.y, v.z, v.w);
-                        property.quaternionValue = q;
+                        quat.Set(qVal[0], qVal[1], qVal[2], qVal[3]);
+                        property.quaternionValue = quat;
                     }
                     break;
+                
                 case UnityExUtility.UnityReadableType.Rect:
-                    Rect r = property.rectValue;
-                    v = new Vector4(r.x, r.y, r.width, r.height);
+                    var r = property.rectValue;
+                    var rVal = new float[] { r.x, r.y, r.width, r.height };
+                    var rLable = new GUIContent[] { new GUIContent("X"), new GUIContent("Y"), new GUIContent("W"), new GUIContent("H") };
                     EditorGUI.BeginChangeCheck();
-                    v = EditorGUI.Vector4Field(rect, "", v);
-                    if (EditorGUI.EndChangeCheck())
-                    {
-                        r.Set(v.x, v.y, v.z, v.w);
+                    EditorGUI.MultiFloatField(rect, new GUIContent(label), rLable, rVal);
+                    if (EditorGUI.EndChangeCheck()) {
+                        r.Set(rVal[0], rVal[1], rVal[2], rVal[3]);
                         property.rectValue = r;
+                    }
+                    break;
+                case UnityExUtility.UnityReadableType.Vector4:
+                    var v4 = property.vector4Value;
+                    var v4Val = new float[] { v4.x, v4.y, v4.z, v4.w };
+                    var v4Lable = new GUIContent[] { new GUIContent("X"), new GUIContent("Y"), new GUIContent("Z"), new GUIContent("W") };
+                    EditorGUI.BeginChangeCheck();
+                    EditorGUI.MultiFloatField(rect, new GUIContent(label), v4Lable, v4Val);
+                    if (EditorGUI.EndChangeCheck()) {
+                        v4.Set(v4Val[0], v4Val[1], v4Val[2], v4Val[3]);
+                        property.vector4Value = v4;
                     }
                     break;
                 case UnityExUtility.UnityReadableType.Enum:
@@ -150,7 +161,7 @@ namespace Imoet.UnityEditor
                     property.objectReferenceValue = inspectedValueObject;
                     break;
                 default:
-                    EditorGUI.PropertyField(rect, property, new GUIContent(""));
+                    EditorGUI.PropertyField(rect, property, new GUIContent(label),true);
                     break;
             }
         }

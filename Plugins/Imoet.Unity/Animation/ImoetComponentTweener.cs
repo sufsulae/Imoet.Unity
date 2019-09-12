@@ -11,12 +11,25 @@ namespace Imoet.Unity.Animation
         [SerializeField]
         private List<Item> m_items;
 
+        private void Awake() {
+            var count = m_items.Count;
+            if (count > 0) {
+                foreach(var item in m_items){
+                    item.Initialize();
+                }
+            }
+        }
+
+        private void Update() {
+            
+        }
+
         [System.Serializable]
         internal class Item {
             //Property
             public TweenSetting setting { get { return m_setting; } set { m_setting = value; } }
             public MethodInfo methodInfo { get { return m_methodInfo; } set { m_methodInfo = value; } }
-            
+
             //Serialized Field
             [SerializeField]
             private string m_methodName;
@@ -56,6 +69,23 @@ namespace Imoet.Unity.Animation
             UnityExInternalUtilty.tweenColor val_color;
             [SerializeField]
             UnityExInternalUtilty.tweenColor32 val_color32;
+
+
+            public void Initialize() {
+
+            }
+
+            public void StartTween() {
+
+            }
+
+            public void StopTween() {
+
+            }
+
+            public void PauseTween() {
+
+            }
         }
     }
 }
