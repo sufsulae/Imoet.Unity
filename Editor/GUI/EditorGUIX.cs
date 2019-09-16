@@ -78,8 +78,8 @@ namespace Imoet.UnityEditor
             bool temp = value;
             string text = !temp ? onDisableText : onEnableText;
             EditorGUI.PrefixLabel(rect, content);
-            rect.x += EditorGUIUtility.labelWidth - 5 * GUI.depth;
-            rect.width -= EditorGUIUtility.labelWidth + 5 * GUI.depth;
+            rect.x += EditorGUIUtility.labelWidth - 5 * EditorGUI.indentLevel;
+            rect.width -= EditorGUIUtility.labelWidth + 5 * EditorGUI.indentLevel;
             temp = GUI.Toggle(rect, temp, new GUIContent(text, content.tooltip), button);
             return temp;
         }
@@ -203,7 +203,6 @@ namespace Imoet.UnityEditor
                             break;
                     }
                     tLower = tLower.ToLower();
-                    Debug.Log(prefix + tLower);
                     prop = property.FindPropertyRelative(prefix + tLower);
                     break;
             }

@@ -3,6 +3,10 @@ using UnityEngine;
 namespace Imoet.Unity.Utility
 {
     using Imoet.Unity.Animation;
+    internal interface ITweenVal {
+        void Initialize();
+        ITweener GetTweener();
+    }
     internal class UnityExInternalUtilty {
         [Serializable]
         internal class tweenByte : TweenerVal<byte> { }
@@ -28,13 +32,22 @@ namespace Imoet.Unity.Utility
         internal class tweenColor : TweenerVal<Color> { }
         [Serializable]
         internal class tweenColor32 : TweenerVal<Color32> { }
+
         [Serializable]
-        internal class TweenerVal<T> {
+        internal class TweenerVal<T> : ITweenVal {
             public Tweener<T> tweener;
             public T valStart, valEnd;
             public TweenSetting tweenerSetting;
+
             public void Initialize() {
                 tweener = new Tweener<T>();
+                tweener.setting = tweenerSetting;
+                tweener.valueStart = valStart;
+                tweener.valueEnd = valEnd;
+            }
+
+            public ITweener GetTweener() {
+                return tweener;
             }
         }
     }
@@ -60,8 +73,7 @@ namespace Imoet.Unity.Utility
             typeof(Enum)
         };
         [Serializable]
-        public class UnityReadableValue
-        {
+        public class UnityReadableValue {
             public string m_string;
             public bool m_bool;
             public byte m_byte;
@@ -70,18 +82,17 @@ namespace Imoet.Unity.Utility
             public float m_float;
             public double m_double;
             public int m_enum;
-            public UnityEngine.Vector2 m_vector2;
-            public UnityEngine.Vector3 m_vector3;
-            public UnityEngine.Vector4 m_vector4;
-            public UnityEngine.Quaternion m_quaternion;
-            public UnityEngine.Color32 m_color32;
-            public UnityEngine.Color m_color;
-            public UnityEngine.Rect m_rect;
+            public Vector2 m_vector2;
+            public Vector3 m_vector3;
+            public Vector4 m_vector4;
+            public Quaternion m_quaternion;
+            public Color32 m_color32;
+            public Color m_color;
+            public Rect m_rect;
             public UnityEngine.Object m_unityObject;
         }
 
-        public enum UnityReadableType
-        {
+        public enum UnityReadableType {
             None = -1,
             Void,
             Byte,
@@ -101,19 +112,16 @@ namespace Imoet.Unity.Utility
             UnityObject,
             Enum
         }
-        public static bool isUnityReadable(Type type)
-        {
+        public static bool isUnityReadable(Type type) {
             if (type.IsEnum)
                 return true;
-            foreach (Type t in UnityReadableTypeList)
-            {
+            foreach (Type t in UnityReadableTypeList) {
                 if (t.IsAssignableFrom(type) || t == type)
                     return true;
             }
             return false;
         }
-        public static Type getUnityReadableEquivalent(Type type)
-        {
+        public static Type getUnityReadableEquivalent(Type type) {
             if (type.IsEnum)
                 return typeof(Enum);
             foreach (Type t in UnityReadableTypeList)
@@ -125,8 +133,7 @@ namespace Imoet.Unity.Utility
             }
             return null;
         }
-        public static UnityReadableType getUnityReadableType(Type type)
-        {
+        public static UnityReadableType getUnityReadableType(Type type) {
             if (type.IsEnum)
                 return UnityReadableType.Enum;
             int length = UnityReadableTypeList.Length;

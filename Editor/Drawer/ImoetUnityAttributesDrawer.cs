@@ -369,8 +369,7 @@ namespace Imoet.UnityEditor
         }
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            if (isInspected && !isShown)
-            {
+            if (isInspected && !isShown){
                 return;
             }
             EditorGUI.PropertyField(position, property);
@@ -380,8 +379,11 @@ namespace Imoet.UnityEditor
     [CustomPropertyDrawer(typeof(DisabledOnPlayModeAttribute))]
     public class DisabledOnPlayModeAttributeDrawer : PropertyDrawer
     {
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
+            return EditorGUI.GetPropertyHeight(property, label, true);
+        }
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
             EditorGUIX.DisabledProperty(position, property, EditorApplication.isPlayingOrWillChangePlaymode);
         }
     }
@@ -389,7 +391,7 @@ namespace Imoet.UnityEditor
     public class NotEditableAttributeDrawer : PropertyDrawer
     {
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label) {
-            return EditorGUI.GetPropertyHeight(property, new GUIContent(),true);
+            return EditorGUI.GetPropertyHeight(property, label, true);
         }
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
             EditorGUIX.DisabledProperty(position, property, true);
@@ -399,10 +401,14 @@ namespace Imoet.UnityEditor
     public class ReadOnlyAttributeDrawer : PropertyDrawer
     {
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label) {
-            return EditorGUI.GetPropertyHeight(property, new GUIContent(), true);
+            return EditorGUI.GetPropertyHeight(property, label, true);
         }
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
-            EditorGUIX.DisabledProperty(position, property, true);
+            EditorGUILayoutX.BeginWideGUI();
+            EditorGUI.BeginDisabledGroup(true);
+            EditorGUI.PropertyField(position, property, true);
+            EditorGUI.EndDisabledGroup();
+            EditorGUILayoutX.EndWideGUI();
         }
     }
     [CustomPropertyDrawer(typeof(BoxInfoAttribute))]

@@ -7,27 +7,25 @@ namespace Imoet.Unity.Events
         public bool AutoExecute;
         [WideToggle]
         public bool forceExe;
-        public UnityEventEx OnEvent {
-            get { return m_OnEvent; }
-        }
+
+        public UnityEventEx OnEvent { get { return m_OnEvent; } }
+
         [SerializeField]
         private UnityEventEx m_OnEvent;
-        void Awake()
-        {
+
+        void Awake() {
             m_OnEvent.startCoroutineDelegate = StartCoroutine;
         }
-        void Start()
-        {
+        void Start() {
             if (AutoExecute)
                 Invoke();
         }
-        public void Invoke()
-        {
-            OnEvent.Invoke(forceExe);
+
+        public void Invoke() {
+            m_OnEvent.Invoke(forceExe);
         }
-        public void Invoke(int i)
-        {
-            OnEvent.Invoke(i, forceExe);
+        public void Invoke(int i) {
+            m_OnEvent.Invoke(i, forceExe);
         }
     }
 }

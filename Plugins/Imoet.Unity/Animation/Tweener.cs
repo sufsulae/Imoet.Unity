@@ -3,6 +3,10 @@
 namespace Imoet.Unity.Animation
 {
     using System;
+    /// <summary>
+    /// Class to make interpolation between 2 values easier.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class Tweener<T> : ITweener
     {
@@ -11,14 +15,38 @@ namespace Imoet.Unity.Animation
         private TweenStatus m_status;
         private T m_valStart, m_valEnd;
 
+        /// <summary>
+        /// Delegate to process / apply calculated tween,must be assigned to make it work
+        /// </summary>
         public Action<T> tweenDelegate { get; set; }
+        /// <summary>
+        /// Delegate to determine the calculation of tween, must be assigned to make it work
+        /// </summary>
         public Func<float, T> tweenCalc { get; set; }
+        /// <summary>
+        /// Setting for the tween
+        /// </summary>
         public TweenSetting setting { get { return m_setting; } set { m_setting = value; } }
+        /// <summary>
+        /// Status of Tween
+        /// </summary>
         public TweenStatus status { get { return m_status; } private set { m_status = value; } }
+        /// <summary>
+        /// Start Value to tween
+        /// </summary>
         public T valueStart { get { return m_valStart; } set { m_valStart = value; } }
+        /// <summary>
+        /// End Value to tween
+        /// </summary>
         public T valueEnd { get { return m_valEnd; } set { m_valEnd = value; } }
+        /// <summary>
+        /// Delegate that will executed when this tween is working
+        /// </summary>
         public Action onTweenEvent { get; set; }
 
+        /// <summary>
+        /// Function to Starting the tween
+        /// </summary>
         public virtual void StartTween()
         {
             var t_set = setting;
@@ -35,6 +63,9 @@ namespace Imoet.Unity.Animation
             }
             setting = t_set;
         }
+        /// <summary>
+        /// Function to Stoping the tween
+        /// </summary>
         public virtual void StopTween()
         {
             var t_set = setting;
@@ -43,10 +74,16 @@ namespace Imoet.Unity.Animation
             status = TweenStatus.Stop;
             setting = t_set;
         }
+        /// <summary>
+        /// Function to Pause the Tween
+        /// </summary>
         public virtual void PauseTween()
         {
             status = TweenStatus.Pause;
         }
+        /// <summary>
+        /// Function to Start the tween in reverse mode
+        /// </summary>
         public virtual void StartReverseTween()
         {
             var t_set = setting;
@@ -63,18 +100,27 @@ namespace Imoet.Unity.Animation
             status = TweenStatus.Tween;
             setting = t_set;
         }
+        /// <summary>
+        /// Function to Swap Between <see cref="valueStart"/> and <see cref="valueEnd"/>
+        /// </summary>
         public virtual void SwapValue()
         {
             var _t = valueStart;
             valueStart = valueEnd;
             valueEnd = _t;
         }
+        /// <summary>
+        /// Function to Swap Between <see cref="valueStart"/> and <see cref="valueEnd"/> then immidietly started the tween
+        /// </summary>
         public virtual void SwapAndStart()
         {
             SwapValue();
             StartTween();
         }
-
+        /// <summary>
+        /// Function to Update the tween, must be executed into continous routines / loop
+        /// </summary>
+        /// <param name="updateTime"></param>
         public virtual void Update(float updateTime)
         {
             var tempSetting = setting;
@@ -116,11 +162,15 @@ namespace Imoet.Unity.Animation
                     break;
             }
             //Apply Tween
-            if (tweenCalc != null && tweenDelegate != null)
+            if (tweenCalc != null && tweenDelegate != null) {
                 tweenDelegate.Invoke(tweenCalc.Invoke(Tween.Evaluate(0.0f, 1.0f, tempSetting.progress, tempSetting.type)));
+            }
             //Apply Updated Setting
             setting = tempSetting;
         }
+        /// <summary>
+        /// Function to Update the tween designated for Unity
+        /// </summary>
         public virtual void Update() {
             Update(Time.deltaTime);
         }

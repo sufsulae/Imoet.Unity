@@ -1,6 +1,10 @@
 ﻿using UnityEngine;
 namespace Imoet.Unity.Animation
 {
+    /// <summary>
+    /// Tween / Easing equation based on Robert Penner Equation:
+    /// http://robertpenner.com/easing/
+    /// </summary>
     public static class Tween
     {
         private const float s1Const = 1.70158f;

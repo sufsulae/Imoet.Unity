@@ -11,6 +11,7 @@ namespace Imoet.UnityEditor
     {
         #region Private Field
         private SerializedProperty m_items;
+        private SerializedProperty m_autoPlay;
         private DynamicList m_list;
         private List<Item> m_cacheItem;
 
@@ -38,6 +39,8 @@ namespace Imoet.UnityEditor
         {
             m_cacheItem = new List<Item>();
             m_items = serializedObject.FindProperty("m_items");
+            m_autoPlay = serializedObject.FindProperty("m_autoPlay");
+
             m_list = new DynamicList(m_items);
             m_list.drawerHeader = this;
             m_list.drawerItemBody = this;
@@ -48,6 +51,7 @@ namespace Imoet.UnityEditor
         {
             if (m_style == null)
                 m_style = new Style();
+            EditorGUILayout.PropertyField(m_autoPlay);
             m_list.Draw();
             serializedObject.ApplyModifiedProperties();
             _cleanCache();
@@ -113,11 +117,10 @@ namespace Imoet.UnityEditor
                 if (selectedItem != null) {
                     name = selectedItem.m_selectedMethod.DeclaringType.Name + "." + methodName;
                 }
-                else {
-                    var id = item.m_component.objectReferenceInstanceIDValue;
-                    if (id != 0 && !item.m_component.objectReferenceValue)
-                        name = "<Missing Component>." + methodName;
-                }
+                //else {
+                //    if (!item.m_component.objectReferenceValue && item.m_component.objectReferenceInstanceIDValue == 0)
+                //        name = "<Missing Component>." + methodName;
+                //}
             }
             if (m_list.reorderable)
                 GUI.Label(rect, name, m_style.labelText);
@@ -132,8 +135,7 @@ namespace Imoet.UnityEditor
         #region Private Method
         private Item _findItem(SerializedProperty property)
         {
-            foreach (var item in m_cacheItem)
-            {
+            foreach (var item in m_cacheItem) {
                 if (item.m_prop == property)
                     return item;
             }
@@ -147,10 +149,8 @@ namespace Imoet.UnityEditor
             var propStart = prop.FindPropertyRelative("valStart");
             var propEnd = prop.FindPropertyRelative("valEnd");
             EditorGUILayoutX.BeginWideGUI();
-            var sRect = EditorGUI.PrefixLabel(new Rect(rect.x, rect.y, rect.width, 17f), new GUIContent("Start"));
-            EditorGUIX.__drawCustomUnityValue(sRect, propStart, item.selectedParamType[0]);
-            var eRect = EditorGUI.PrefixLabel(new Rect(rect.x, rect.y + rect.height - 17f, rect.width, 17f), new GUIContent("End"));
-            EditorGUIX.__drawCustomUnityValue(eRect, propEnd, item.selectedParamType[0]);
+            EditorGUIX.__drawCustomUnityValue(new Rect(rect.x, rect.y, rect.width, 17f), propStart, item.selectedParamType[0], "Start");
+            EditorGUIX.__drawCustomUnityValue(new Rect(rect.x, rect.y + rect.height - 17f, rect.width, 17f), propEnd, item.selectedParamType[0], "End");
             EditorGUILayoutX.EndWideGUI();
         }
 
@@ -161,7 +161,11 @@ namespace Imoet.UnityEditor
                     prop.boolValue = (bool)value;
                     break;
                 case UnityExUtility.UnityReadableType.Byte:
+                    prop.intValue = (byte)value;
+                    break;
                 case UnityExUtility.UnityReadableType.Short:
+                    prop.intValue = (short)value;
+                    break;
                 case UnityExUtility.UnityReadableType.Int:
                     prop.intValue = (int)value;
                     break;
@@ -186,9 +190,11 @@ namespace Imoet.UnityEditor
                 case UnityExUtility.UnityReadableType.Rect:
                     prop.rectValue = (Rect)value;
                     break;
-                case UnityExUtility.UnityReadableType.Color32:
                 case UnityExUtility.UnityReadableType.Color:
                     prop.colorValue = (Color)value;
+                    break;
+                case UnityExUtility.UnityReadableType.Color32:
+                    prop.colorValue = (Color32)value;
                     break;
             }
         }

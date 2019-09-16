@@ -14,6 +14,31 @@ namespace Imoet.Unity
             this.BottomRight = BottomRight;
             this.BottomLeft = BottomLeft;
         }
+        /// <summary>
+        ///     Get width of this active Rect
+        /// </summary>
+        public float width
+        {
+            get { return Vector3.Distance(TopLeft, TopRight); }
+        }
+
+        /// <summary>
+        ///     Get height of this active Rect
+        /// </summary>
+        public float height
+        {
+            get { return Vector3.Distance(TopLeft, BottomLeft); }
+        }
+
+        /// <summary>
+        ///     Get the size (width and height) of this active Rect representative in <see cref="Vector2" />
+        /// </summary>
+        /// <value>The size.</value>
+        public SizeF size
+        {
+            get { return new Vector2(width, height); }
+        }
+
         public Vector3 this[int idx]
         {
             get

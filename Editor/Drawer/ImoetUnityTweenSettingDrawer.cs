@@ -23,8 +23,8 @@ namespace Imoet.UnityEditor {
             if (property.isExpanded)
             {
                 GUI.Box(position, "", _style.body);
-                EditorGUIX.ToogleWideBar(new Rect(position.x + 5, position.y + 17f * 0 + 20f, position.width, 16f), property.FindPropertyRelative("forceTween"));
-                EditorGUIX.ToogleWideBar(new Rect(position.x + 5, position.y + 17f * 1 + 20f, position.width, 16f), "Always Reset", property.FindPropertyRelative("resetValue"));
+                EditorGUIX.ToogleWideBar(new Rect(position.x, position.y + 17f * 0 + 20f, position.width - 5f, 16f), property.FindPropertyRelative("forceTween"));
+                EditorGUIX.ToogleWideBar(new Rect(position.x, position.y + 17f * 1 + 20f, position.width - 5f, 16f), "Always Reset", property.FindPropertyRelative("resetValue"));
                 EditorGUILayoutX.BeginWideGUI();
                 EditorGUI.PropertyField(new Rect(position.x + 5, position.y + 17f * 2 + 20f, position.width - 10f, 16f), property.FindPropertyRelative("duration"));
                 EditorGUI.PropertyField(new Rect(position.x + 5, position.y + 17f * 3 + 20f, position.width - 10f, 16f), property.FindPropertyRelative("mode"));

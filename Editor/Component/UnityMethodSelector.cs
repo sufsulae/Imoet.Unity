@@ -268,10 +268,15 @@ namespace Imoet.UnityEditor
             return false;
         }
 
-        internal bool _assignValidMethodByName(string methodName, BindingFlags binding = BindingFlags.Instance | BindingFlags.Public)
+        internal bool _assignValidMethodByName(string methodName, Type[] parameters = null, Type returnType = null, BindingFlags binding = BindingFlags.Instance | BindingFlags.Public)
         {
             if (m_selectedObject == null || string.IsNullOrEmpty(methodName))
                 return false;
+            if (parameters != null)
+                m_selectedParamType = parameters;
+            if (returnType != null)
+                m_selectedReturnType = returnType;
+
             MethodInfo[] obMethodList = m_selectedObjectType.GetMethods(binding);
             MethodInfo _res = null;
             foreach (MethodInfo mInfo in obMethodList)
@@ -281,7 +286,6 @@ namespace Imoet.UnityEditor
                     bool _ok = true;
                     if (m_selectedReturnType != null)
                     {
-                        Type returnType = mInfo.ReturnParameter.ParameterType;
                         if ((!m_selectedReturnType.IsEnum && !returnType.IsEnum) &&
                            !m_selectedReturnType.IsAssignableFrom(returnType)) {
                             _ok = false;
@@ -292,7 +296,8 @@ namespace Imoet.UnityEditor
                         ParameterInfo[] paramInfoList = mInfo.GetParameters();
                         int paramInfoListLen = paramInfoList.Length;
                         int selectedParamTypeLen = m_selectedParamType.Length;
-                        if (selectedParamTypeLen == paramInfoListLen) {
+                        if (selectedParamTypeLen == paramInfoListLen)
+                        {
                             for (int i = 0; i < paramInfoListLen; i++)
                             {
                                 if ((!m_selectedParamType[i].IsEnum && !paramInfoList[i].ParameterType.IsEnum) &&
@@ -300,6 +305,9 @@ namespace Imoet.UnityEditor
                                     _ok = false;
                                 }
                             }
+                        }
+                        else {
+                            _ok = false;
                         }
                     }
                     if (_ok) {

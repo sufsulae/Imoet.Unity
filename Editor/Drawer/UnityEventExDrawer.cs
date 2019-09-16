@@ -70,11 +70,13 @@ namespace Imoet.UnityEditor {
             SerializedProperty exeMode = temp_inspectedProp.FindPropertyRelative("m_exeMode");
             exeMode.enumValueIndex = EditorGUI.Popup(new Rect(r.x + (r.width - r.width / 3), r.y, r.width / 3 + 3, r.height - 2), exeMode.enumValueIndex, exeMode.enumDisplayNames, EditorStyles.toolbarPopup);
         }
+
         private void _list_drawElementCallback(Rect rect, int index, bool isActive, bool isFocused)
         {
             var prop = temp_inspectedList.serializedProperty.GetArrayElementAtIndex(index);
             var propItem = new PropItem(prop);
             //We split this element area into 3 region
+            
             //Region 1 (Enable Button & Obj Reff)
             var lRect = new Rect(rect.x, rect.y, rect.width / 3.5f, rect.height);
             //Enable Button
@@ -82,6 +84,7 @@ namespace Imoet.UnityEditor {
             EditorGUI.BeginDisabledGroup(!propItem.enable.boolValue);
             //Object Refference
             EditorGUI.ObjectField(temp_uiMargin.Remove(new Rect(lRect.x, lRect.y + lRect.height / 2f, lRect.width, lRect.height / 2f)), propItem.reff, new GUIContent(""));
+            
             //Region 2 (Method Selector & Value Editor)
             var mRect = new Rect(rect.x + rect.width / 3.5f, rect.y, rect.width - rect.width * (1/3.5f + 1/5f), rect.height);
             var objReff = propItem.reff.objectReferenceValue;
@@ -105,8 +108,9 @@ namespace Imoet.UnityEditor {
                 if (!string.IsNullOrEmpty(propItem.methodName.stringValue))
                 {
                     methodSelector.selectedItem = new UnityMethodSelectorItem(objReff, null);
-                    methodSelector.selectedItem.m_selectedParamType = new Type[] { UnityExUtility.UnityReadableTypeList[propItem.methodType.enumValueIndex - 1] };
-                    methodSelector.selectedItem._assignValidMethodByName(propItem.methodName.stringValue);
+                    if(propItem.methodType.enumValueIndex - 1 > 1)
+                        methodSelector.selectedItem.m_selectedParamType = new Type[] { UnityExUtility.UnityReadableTypeList[propItem.methodType.enumValueIndex-1] };
+                    methodSelector.selectedItem._assignValidMethodByName(propItem.methodName.stringValue,null,null);
                 }
                 methodSelector.onMethodSelected = (m) => { _ms_onMethodSelected(propItem, m); };
                 methodSelector.onValidateMenuName = (obj, m) => { return _ms_onValidateMenuName(propItem, obj, m); };
@@ -127,6 +131,7 @@ namespace Imoet.UnityEditor {
                     EditorGUIX.__drawUnityEventValue(temp_uiMargin.Remove(new Rect(mRect.x, mRect.y + mRect.height / 2f, mRect.width, mRect.height / 2f)), propItem.value, itemMParamType);
                 }
             }
+            
             //Region 3 (Delay Value)
             var rRect = new Rect(rect.x + rect.width - rect.width / 5f, rect.y, rect.width / 5f, rect.height);
             EditorGUI.PrefixLabel(temp_uiMargin.Remove(new Rect(rRect.x, rRect.y, rRect.width, rRect.height / 2f)), new GUIContent("Delay"));
@@ -155,6 +160,10 @@ namespace Imoet.UnityEditor {
                 {
                     item.paramTypePath.stringValue = param[0].ParameterType.FullName;
                     item.methodType.enumValueIndex = (int)UnityExUtility.getUnityReadableType(param[0].ParameterType) + 1;
+                }
+                else {
+                    item.paramTypePath.stringValue = null;
+                    item.methodType.enumValueIndex = 1;
                 }
             }
             temp_inspectedProp.serializedObject.ApplyModifiedProperties();

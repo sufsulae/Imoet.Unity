@@ -78,12 +78,6 @@ namespace Imoet.Unity.Events
         }
         public bool SetupMethod()
         {
-            //We already have Method, Execute It!
-            if (internalMethod != null)
-            {
-                m_methodName = internalMethod.Name;
-                return true;
-            }
             //We Dont have any method, Find It!
             if (m_reff != null)
             {
@@ -98,13 +92,12 @@ namespace Imoet.Unity.Events
                             if (mInfoParams.Length == 1)
                             {
                                 Type mInfoParamType = mInfoParams[0].ParameterType;
-                                if (mInfoParams[0].ParameterType == typeof(Enum) && mInfoParams[0].ParameterType.FullName == m_methodParamTypePath)
-                                {
-                                    internalMethodParam = mInfoParams[0];
-                                    internalMethod = mInfo;
-                                    return true;
-                                }
-                                else if(UnityExUtility.UnityReadableTypeList[(int)m_methodType].IsAssignableFrom(mInfoParams[0].ParameterType) && mInfoParamType.FullName == m_methodParamTypePath)
+
+                                if (
+                                    mInfoParams[0].ParameterType == typeof(Enum) && 
+                                    mInfoParams[0].ParameterType.FullName == m_methodParamTypePath ||
+                                    UnityExUtility.UnityReadableTypeList[(int)m_methodType].IsAssignableFrom(mInfoParams[0].ParameterType) &&
+                                     mInfoParamType.FullName == m_methodParamTypePath)
                                 {
                                     internalMethodParam = mInfoParams[0];
                                     internalMethod = mInfo;
