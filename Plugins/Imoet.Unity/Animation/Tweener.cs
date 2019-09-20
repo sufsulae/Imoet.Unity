@@ -49,6 +49,8 @@ namespace Imoet.Unity.Animation
         /// </summary>
         public virtual void StartTween()
         {
+            if (valueStart.Equals(valueEnd))
+                return;
             var t_set = setting;
             if (!t_set.forceTween && status == TweenStatus.Tween)
                 return;
@@ -86,6 +88,8 @@ namespace Imoet.Unity.Animation
         /// </summary>
         public virtual void StartReverseTween()
         {
+            if (valueStart.Equals(valueEnd))
+                return;
             var t_set = setting;
             if (!t_set.forceTween && status == TweenStatus.Tween)
                 return;
@@ -125,8 +129,15 @@ namespace Imoet.Unity.Animation
         {
             var tempSetting = setting;
             //Get Last Status and stop if we already reach the end
-            if (status != TweenStatus.Tween || setting.duration == 0)
+            if (status != TweenStatus.Tween || setting.duration == 0) {
+                if(setting.duration == 0)
+                    Debug.LogWarning("You Are Trying to Play Tweener while duration is 0, ignoring");
                 return;
+            }
+            //Try to fix in case direction is Zero
+            if (tempSetting.direction == 0) {
+                tempSetting.direction = TweenDirection.Forward;
+            }
             //Calculate Progress by updateTime
             tempSetting.progress += updateTime / tempSetting.duration * (int)setting.direction;
             switch (setting.mode)

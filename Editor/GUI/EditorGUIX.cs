@@ -37,12 +37,12 @@ namespace Imoet.UnityEditor
         {
             if (property.propertyType == SerializedPropertyType.Boolean) {
                 if (property.hasMultipleDifferentValues) {
-                    if (!ToogleWideBar(rect, true, property.displayName, "-", "-")) {
+                    if (!_toogleWideBar(rect, true, new GUIContent(property.displayName), property.depth, "-", "-")) {
                         property.boolValue = true;
                     }
                 }
                 else {
-                    property.boolValue = ToogleWideBar(rect, property.boolValue, property.displayName);
+                    property.boolValue = _toogleWideBar(rect, property.boolValue, new GUIContent(property.displayName), property.depth, onDisableText, onEnableText);
                 }
             }
             return property.boolValue;
@@ -54,14 +54,13 @@ namespace Imoet.UnityEditor
             {
                 if (property.hasMultipleDifferentValues)
                 {
-                    if (!EditorGUIX.ToogleWideBar(rect, true, label, "-", "-"))
-                    {
+                    if (!_toogleWideBar(rect, true, new GUIContent(label), property.depth, "-", "-")) {
                         property.boolValue = true;
                     }
                 }
                 else
                 {
-                    property.boolValue = EditorGUIX.ToogleWideBar(rect, property.boolValue, label);
+                    property.boolValue = _toogleWideBar(rect, property.boolValue, new GUIContent(label),property.depth, onDisableText, onEnableText);
                 }
             }
             return property.boolValue;
@@ -69,19 +68,12 @@ namespace Imoet.UnityEditor
 
         public static bool ToogleWideBar(Rect rect, bool value, string label = "", string onDisableText = "Disabled", string onEnableText = "Enabled")
         {
-            return ToogleWideBar(rect, value, new GUIContent(label), onDisableText, onEnableText);
+            return _toogleWideBar(rect, value, new GUIContent(label), 0, onDisableText, onEnableText);
         }
 
         public static bool ToogleWideBar(Rect rect, bool value, GUIContent content, string onDisableText = "Disabled", string onEnableText = "Enabled")
         {
-            CheckStyle();
-            bool temp = value;
-            string text = !temp ? onDisableText : onEnableText;
-            EditorGUI.PrefixLabel(rect, content);
-            rect.x += EditorGUIUtility.labelWidth - 5 * EditorGUI.indentLevel;
-            rect.width -= EditorGUIUtility.labelWidth + 5 * EditorGUI.indentLevel;
-            temp = GUI.Toggle(rect, temp, new GUIContent(text, content.tooltip), button);
-            return temp;
+            return _toogleWideBar(rect, value, content, 0, onDisableText, onEnableText);
         }
 
         public static void DisabledProperty(Rect rect, SerializedProperty property, bool disabled)
@@ -89,6 +81,19 @@ namespace Imoet.UnityEditor
             EditorGUI.BeginDisabledGroup(disabled);
             EditorGUI.PropertyField(rect, property, true);
             EditorGUI.EndDisabledGroup();
+        }
+
+        private static bool _toogleWideBar(Rect rect, bool value, GUIContent content, int level = 0, string onDisableText = "Disable", string onEnableText = "Enabled")
+        {
+            CheckStyle();
+            bool temp = value;
+            string text = !temp ? onDisableText : onEnableText;
+            rect.x += 1.5f * (float)level;
+            rect = EditorGUI.IndentedRect(rect);
+            rect.width -= (float)level;
+            rect = EditorGUI.PrefixLabel(rect, content);
+            temp = GUI.Toggle(rect, temp, new GUIContent(text, content.tooltip), button);
+            return temp;
         }
 
         internal static void __drawCustomUnityValue(Rect rect, SerializedProperty property, Sys.Type type, string label = "") {

@@ -404,11 +404,9 @@ namespace Imoet.UnityEditor
             return EditorGUI.GetPropertyHeight(property, label, true);
         }
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
-            EditorGUILayoutX.BeginWideGUI();
             EditorGUI.BeginDisabledGroup(true);
             EditorGUI.PropertyField(position, property, true);
             EditorGUI.EndDisabledGroup();
-            EditorGUILayoutX.EndWideGUI();
         }
     }
     [CustomPropertyDrawer(typeof(BoxInfoAttribute))]

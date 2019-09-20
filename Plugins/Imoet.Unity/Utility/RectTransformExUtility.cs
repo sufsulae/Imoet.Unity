@@ -12,7 +12,7 @@ namespace Imoet.Unity.Utility
         }
         public static void AutoSetAnchor(this RectTransform r)
         {
-            RectTransform pRect = r.GetParentRect();
+            var pRect = r.GetParentRect();
             if (pRect == null)
                 return;
             var _offsetMin = r.offsetMin;
@@ -20,17 +20,17 @@ namespace Imoet.Unity.Utility
             var _anchorMin = r.anchorMin;
             var _anchorMax = r.anchorMax;
             var pRectRect = pRect.rect;
-            var anchorMin = new UnityEngine.Vector2(
+            var anchorMin = new Vector2(
                     _anchorMin.x + (_offsetMin.x / pRectRect.width),
                     _anchorMin.y + (_offsetMin.y / pRectRect.height)
                 );
-            var anchorMax = new UnityEngine.Vector2(
+            var anchorMax = new Vector2(
                     _anchorMax.x + (_offsetMax.x / pRectRect.width),
                     _anchorMax.y + (_offsetMax.y / pRectRect.height)
                 );
             r.anchorMin = anchorMin;
             r.anchorMax = anchorMax;
-            r.offsetMin = r.offsetMax = UnityEngine.Vector2.zero;
+            r.offsetMin = r.offsetMax = Vector2.zero;
         }
 
         /// <summary>
@@ -44,10 +44,10 @@ namespace Imoet.Unity.Utility
         }
 
         /// <summary>
-        ///     Get <see cref="UCUP.UI.RectCorner3D" /> from this active <see cref="RectTransform" />
+        ///     Get <see cref="Imoet.UI.RectCorner3D" /> from this active <see cref="RectTransform" />
         /// </summary>
         /// <returns>
-        ///     <see cref="UCUP.UI.RectConrner3D" />
+        ///     <see cref="Imoet.UI.RectConrner3D" />
         /// </returns>
         public static RectCorner GetWorldCorner3D(this RectTransform rect)
         {
@@ -61,13 +61,13 @@ namespace Imoet.Unity.Utility
         {
             var corners = new UnityEngine.Vector3[4];
             rect.GetWorldCorners(corners);
-            return new RectCorner(corners[1], corners[2], corners[0], corners[3]);
+            return new RectCorner(corners[0], corners[1], corners[2], corners[3]);
         }
         private static RectCorner GetLocalCorners(RectTransform rect)
         {
             var corners = new UnityEngine.Vector3[4];
             rect.GetLocalCorners(corners);
-            return new RectCorner(corners[1], corners[2], corners[0], corners[3]);
+            return new RectCorner(corners[0], corners[1], corners[2], corners[3]);
         }
     }
 }

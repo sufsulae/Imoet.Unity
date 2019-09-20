@@ -1,10 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using Imoet.Unity.Animation;
 using UnityEditor;
-using Imoet.Unity.Animation;
+using UnityEngine;
 
-namespace Imoet.UnityEditor {
+namespace Imoet.UnityEditor
+{
     [CustomPropertyDrawer(typeof(TweenSetting))]
     public sealed class ImoetUnityTweenSettingDrawer : PropertyDrawer {
         private static Style _style;
@@ -20,8 +19,7 @@ namespace Imoet.UnityEditor {
                 EditorGUI.indentLevel--;
             if (_style == null)
                 _style = new Style();
-            if (property.isExpanded)
-            {
+            if (property.isExpanded) {
                 GUI.Box(position, "", _style.body);
                 EditorGUIX.ToogleWideBar(new Rect(position.x, position.y + 17f * 0 + 20f, position.width - 5f, 16f), property.FindPropertyRelative("forceTween"));
                 EditorGUIX.ToogleWideBar(new Rect(position.x, position.y + 17f * 1 + 20f, position.width - 5f, 16f), "Always Reset", property.FindPropertyRelative("resetValue"));
@@ -35,8 +33,7 @@ namespace Imoet.UnityEditor {
                 EditorGUI.EndDisabledGroup();
                 EditorGUILayoutX.EndWideGUI();
             }
-            if (GUI.Button(new Rect(position.x, position.y, position.width, 18f), "", _style.header))
-            {
+            if (GUI.Button(new Rect(position.x, position.y, position.width, 18f), "", _style.header)) {
                 property.isExpanded = !property.isExpanded;
             }
             EditorGUI.LabelField(new Rect(position.x + 5, position.y, position.width - 5, position.height), property.displayName, _style.boldLabel);

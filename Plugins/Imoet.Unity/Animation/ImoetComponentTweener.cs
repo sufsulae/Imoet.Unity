@@ -96,29 +96,29 @@ namespace Imoet.Unity.Animation
 
             //Value
             [SerializeField]
-            UnityExInternalUtilty.tweenByte val_byte;
+            ImoetAnimUtility.tweenByte val_byte;
             [SerializeField]
-            UnityExInternalUtilty.tweenShort val_short;
+            ImoetAnimUtility.tweenShort val_short;
             [SerializeField]
-            UnityExInternalUtilty.tweenInt val_int;
+            ImoetAnimUtility.tweenInt val_int;
             [SerializeField]
-            UnityExInternalUtilty.tweenFloat val_float;
+            ImoetAnimUtility.tweenFloat val_float;
             [SerializeField]
-            UnityExInternalUtilty.tweenDouble val_double;
+            ImoetAnimUtility.tweenDouble val_double;
             [SerializeField]
-            UnityExInternalUtilty.tweenVector2 val_vector2;
+            ImoetAnimUtility.tweenVector2 val_vector2;
             [SerializeField]
-            UnityExInternalUtilty.tweenVector3 val_vector3;
+            ImoetAnimUtility.tweenVector3 val_vector3;
             [SerializeField]
-            UnityExInternalUtilty.tweenVector4 val_vector4;
+            ImoetAnimUtility.tweenVector4 val_vector4;
             [SerializeField]
-            UnityExInternalUtilty.tweenQuaternion val_quaternion;
+            ImoetAnimUtility.tweenQuaternion val_quaternion;
             [SerializeField]
-            UnityExInternalUtilty.tweenRect val_rect;
+            ImoetAnimUtility.tweenRect val_rect;
             [SerializeField]
-            UnityExInternalUtilty.tweenColor val_color;
+            ImoetAnimUtility.tweenColor val_color;
             [SerializeField]
-            UnityExInternalUtilty.tweenColor32 val_color32;
+            ImoetAnimUtility.tweenColor32 val_color32;
 
             //Global
             ITweenVal m_tweener;
