@@ -16,7 +16,7 @@ namespace Imoet.Unity.Audio {
 
         public AudioClip GetClip(string search)
         {
-            if (string.IsNullOrWhiteSpace(search))
+            if (string.IsNullOrEmpty(search))
                 return null;
             foreach (var clip in m_clips)
             {

@@ -24,10 +24,17 @@ namespace Imoet.UnityEditor
 
         private void OnEnable() {
             m_tgt = (ImoetRectTransformTweener)target;
+#if UNITY_2017_1_OR_NEWER
             var prefabType = PrefabUtility.GetPrefabAssetType(m_tgt);
             if (prefabType != PrefabAssetType.NotAPrefab && prefabType != PrefabAssetType.MissingAsset) {
                 m_tgt = null;
             }
+#else
+            var prefabType = PrefabUtility.GetPrefabType(m_tgt);
+            if (prefabType != PrefabType.None && m_tgt.gameObject.scene.name == null) {
+                m_tgt = null;
+            }
+#endif
             m_items = new List<Item>();
             m_items.Add(new Item(serializedObject, "Rect") { parent = this });
             m_items.Add(new Item(serializedObject, "Rot") { parent = this });

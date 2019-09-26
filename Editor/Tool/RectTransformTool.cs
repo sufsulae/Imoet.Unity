@@ -14,7 +14,11 @@ namespace Imoet.UnityEditor.Tool
                 return;
             foreach (GameObject g in allG)
             {
+#if UNITY_2017_1_OR_NEWER
                 if (PrefabUtility.GetPrefabAssetType(g) == PrefabAssetType.NotAPrefab) {
+#else
+                if(PrefabUtility.GetPrefabType(g) == PrefabType.None && g.gameObject.scene.name == null) { 
+#endif
                     RectTransform r = g.GetComponent<RectTransform>();
                     if (r != null)
                     {

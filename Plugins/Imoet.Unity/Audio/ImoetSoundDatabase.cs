@@ -73,7 +73,7 @@ namespace Imoet.Unity.Audio
                 }
             }
             globalPlaylist = writer.ToString();
-            writer.Clear();
+            writer = new StringBuilder();
 
             //Music Playlist
             foreach (var clip in m_musicPack.audioClips)
@@ -81,7 +81,7 @@ namespace Imoet.Unity.Audio
                 writer.AppendLine(string.Format("\t\t\tpublic const string {0} = \"{1}\";", clip.name.Replace(" ", "_"), clip.name));
             }
             musicPlaylist = writer.ToString();
-            writer.Clear();
+            writer = new StringBuilder();
 
             //SFX Playlist
             foreach (var clip in m_sfxPack.audioClips)
@@ -89,7 +89,7 @@ namespace Imoet.Unity.Audio
                 writer.AppendLine(string.Format("\t\t\tpublic const string {0} = \"{1}\";", clip.name.Replace(" ", "_"), clip.name));
             }
             sfxPlaylist = writer.ToString();
-            writer.Clear();
+            writer = new StringBuilder();
 
             //Write Down to file
             res = writer.AppendFormat(templ, globalPlaylist, musicPlaylist, sfxPlaylist).ToString();

@@ -70,6 +70,7 @@ namespace Imoet.Unity
         {
             return new SizeF((int)p.x, (int)p.y);
         }
+#if UNITY_2017_1_OR_NEWER
         public static implicit operator Vector2Int(SizeF p)
         {
             return new Vector2Int(p.width, p.height);
@@ -78,9 +79,10 @@ namespace Imoet.Unity
         {
             return new SizeF(p.x, p.y);
         }
+#endif
         #endregion
 
-        #region Equal Operator
+#region Equal Operator
         public static bool operator ==(SizeF left, SizeF right)
         {
             return left.width == right.width && left.height == right.height;
@@ -89,7 +91,7 @@ namespace Imoet.Unity
         {
             return left.width != right.width || left.height == right.height;
         }
-        #endregion
+#endregion
 
         public override bool Equals(object obj)
         {
