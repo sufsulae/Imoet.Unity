@@ -5,38 +5,33 @@ namespace Imoet.Unity {
     {
         private int m_dataLength;
 
-        public Array2D(int rowCount, int coloumCount)
-        {
-            Resize(rowCount, coloumCount);
+        public Array2D(int rowCount, int columnCount) {
+            Resize(rowCount, columnCount);
         }
+
         //Property
         public int rowCount { get; private set; }
-
-        public int coloumCount { get; private set; }
-
-        public T this[int row, int coloum]
-        {
+        public int columnCount { get; private set; }
+        public T this[int row, int coloum] {
             get
             {
-                if (row > rowCount - 1 || coloum > coloumCount - 1)
+                if (row > rowCount - 1 || coloum > columnCount - 1)
                     throw new IndexOutOfRangeException("row or coloum value is out of range");
-                return get_data[coloum + row * coloumCount];
+                return get_data[coloum + row * columnCount];
             }
             set
             {
-                if (row > rowCount - 1 || coloum > coloumCount - 1)
+                if (row > rowCount - 1 || coloum > columnCount - 1)
                     throw new IndexOutOfRangeException("row or coloum value is out of range");
-                get_data[coloum + row * coloumCount] = value;
+                get_data[coloum + row * columnCount] = value;
             }
         }
 
         internal T[] get_data { get; private set; }
-
-        public void Resize(int newRowCount, int newColoumCount)
-        {
+        public void Resize(int newRowCount, int newColumnCount) {
             rowCount = newRowCount;
-            coloumCount = newColoumCount;
-            m_dataLength = rowCount * coloumCount;
+            columnCount = newColumnCount;
+            m_dataLength = rowCount * columnCount;
             get_data = new T[m_dataLength];
         }
     }
