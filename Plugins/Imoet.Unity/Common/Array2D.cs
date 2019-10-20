@@ -28,6 +28,10 @@ namespace Imoet.Unity {
         }
 
         internal T[] get_data { get; private set; }
+        internal void __internal_setData(T[] data) {
+            get_data = data;
+            m_dataLength = data.Length;
+        }
         public void Resize(int newRowCount, int newColumnCount) {
             rowCount = newRowCount;
             columnCount = newColumnCount;

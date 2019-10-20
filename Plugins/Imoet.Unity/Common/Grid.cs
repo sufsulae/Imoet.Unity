@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using Imoet.Unity;
 
 namespace Imoet.Unity {
     [System.Serializable]
@@ -8,7 +7,16 @@ namespace Imoet.Unity {
         private Array2D<Cell> m_data;
         private Config m_config;
 
+        /// <summary>
+        /// Configuation Of This Grid
+        /// </summary>
         public Config config { get { return m_config; } }
+        /// <summary>
+        /// Get the <see cref="Grid.Cell"/> from specified Row and Column
+        /// </summary>
+        /// <param name="row">Row Index</param>
+        /// <param name="col">Column Index</param>
+        /// <returns>specified <see cref="Grid.Cell"/> otherwise, null</returns>
         public Cell this[int row, int col] { get { return m_data[row, col]; } }
 
         //Constructor
@@ -23,7 +31,7 @@ namespace Imoet.Unity {
             _buildGrid(config);
         }
 
-        public Cell FindCellByPoint(Vector3 pos, Transform anchor)
+        public Cell FindCellByPoint(Vector3 pos, Transform anchor = null)
         {
             foreach (var data in m_data.get_data)
             {
@@ -69,6 +77,8 @@ namespace Imoet.Unity {
 
             //MidCenter
             var midPos = new Vector3(sumX, cell.size.y, sumZ) / 2f;
+
+            //Create
             var startPos = new Vector3(-midPos.x + cell.size.x / 2f, 0, -midPos.z + cell.size.z / 2f);
 
             for (int x = 0; x < m_data.rowCount; x++)
@@ -139,6 +149,14 @@ namespace Imoet.Unity {
             //LowerCenter,
             //LowerRight  
         }
+        public enum Swizzle {
+            XYZ,
+            XZY,
+            YXZ,
+            YZX,
+            ZYX,
+            ZXY
+        }
 
         [System.Serializable]
         public struct Config
@@ -147,17 +165,20 @@ namespace Imoet.Unity {
             public int numOfColumn;
             public int numOfRow;
             public Anchor anchor;
+            public Swizzle swizzle;
 
             public Config(
                 int numOfColumn = 1,
                 int numOfRow = 1,
                 Vector3 cellSize = default,
-                Anchor anchor = Anchor.MiddleCenter)
+                Anchor anchor = Anchor.MiddleCenter,
+                Swizzle swizzle = Swizzle.XYZ)
             {
                 this.cellSize = cellSize;
                 this.numOfColumn = numOfColumn;
                 this.numOfRow = numOfRow;
                 this.anchor = anchor;
+                this.swizzle = swizzle;
             }
 
             public static bool operator ==(Config a, Config b)

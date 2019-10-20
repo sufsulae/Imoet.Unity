@@ -103,7 +103,6 @@ namespace Imoet.UnityEditor
             if (unityType == UnityExUtility.UnityReadableType.Void)
                 return;
 
-            var v = new Vector4();
             switch (unityType)
             {
                 case UnityExUtility.UnityReadableType.Boolean:
