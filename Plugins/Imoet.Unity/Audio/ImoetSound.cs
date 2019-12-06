@@ -17,16 +17,16 @@ namespace Imoet.Unity.Audio
         [SerializeField]
         private List<AudioSource> m_audios;
 
-        public static AudioSource musicAudioSource { get { return instance.m_musicAudio; } }
-        public static AudioSource sfxAudioSource { get { return instance.m_sfxAudio; } }
-        public static List<AudioSource> audioSources { get { return instance.m_audios; } }
+        public static AudioSource musicAudioSource { get { return current.m_musicAudio; } }
+        public static AudioSource sfxAudioSource { get { return current.m_sfxAudio; } }
+        public static List<AudioSource> audioSources { get { return current.m_audios; } }
 
         private void Awake() {
             m_audios = new List<AudioSource>(GetComponents<AudioSource>());
         }
 
         public static AudioSource Play(string audioName) {
-            foreach (var audio in instance.m_audios)
+            foreach (var audio in current.m_audios)
             {
                 if (!audio.isPlaying) {
                     Play(audioName,audio);
@@ -42,7 +42,7 @@ namespace Imoet.Unity.Audio
             audioSource.Play();
         }
         public static AudioSource PlayOneShot(string audioName) {
-            foreach (var audio in instance.m_audios) {
+            foreach (var audio in current.m_audios) {
                 if (!audio.isPlaying) {
                     PlayOneShot(audioName, audio);
                     return audio;
@@ -58,12 +58,12 @@ namespace Imoet.Unity.Audio
 
         public static AudioSource PlaySFX(string audioName) {
             var clip = ImoetSoundDatabase.sfxPack.GetClip(audioName);
-            if (clip != null && instance.m_sfxAudio) {
-                instance.m_sfxAudio.PlayOneShot(clip);
-                return instance.m_sfxAudio;
+            if (clip != null && current.m_sfxAudio) {
+                current.m_sfxAudio.PlayOneShot(clip);
+                return current.m_sfxAudio;
             }
-            instance.m_sfxAudio = PlayOneShot("sfx/" + audioName);
-            return instance.m_sfxAudio;
+            current.m_sfxAudio = PlayOneShot("sfx/" + audioName);
+            return current.m_sfxAudio;
         }
 
         public static void PlaySFX(string audioName, AudioSource audioSource) {
@@ -72,13 +72,13 @@ namespace Imoet.Unity.Audio
 
         public static AudioSource PlayMusic(string audioName) {
             var clip = ImoetSoundDatabase.musicPack.GetClip(audioName);
-            if (clip != null && instance.m_musicAudio) {
-                instance.m_musicAudio.clip = clip;
-                instance.m_musicAudio.Play();
-                return instance.m_musicAudio;
+            if (clip != null && current.m_musicAudio) {
+                current.m_musicAudio.clip = clip;
+                current.m_musicAudio.Play();
+                return current.m_musicAudio;
             }
-            instance.m_musicAudio = Play("music/" + audioName);
-            return instance.m_musicAudio;
+            current.m_musicAudio = Play("music/" + audioName);
+            return current.m_musicAudio;
         }
 
         public static void PlayMusic(string audioName, AudioSource audioSource) {
@@ -119,8 +119,8 @@ namespace Imoet.Unity.Audio
         }
 
         private static AudioSource _getNewAudio() {
-            var source = instance.gameObject.AddComponent<AudioSource>();
-            instance.m_audios.Add(source);
+            var source = current.gameObject.AddComponent<AudioSource>();
+            current.m_audios.Add(source);
             return source;
         }
     }

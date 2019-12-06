@@ -88,9 +88,9 @@ namespace Imoet.UnityEditor
             CheckStyle();
             bool temp = value;
             string text = !temp ? onDisableText : onEnableText;
-            rect.x += 1.5f * (float)level;
+            rect.x +=  5 * (float)level;
             rect = EditorGUI.IndentedRect(rect);
-            rect.width -= (float)level;
+            rect.width -= (float)level * 5;
             rect = EditorGUI.PrefixLabel(rect, content);
             temp = GUI.Toggle(rect, temp, new GUIContent(text, content.tooltip), button);
             return temp;

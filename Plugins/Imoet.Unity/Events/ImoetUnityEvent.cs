@@ -14,134 +14,104 @@ namespace Imoet.Unity.Events
     public delegate Coroutine StartCoroutineDelegate(IEnumerator enumerator);
 
     [System.Serializable]
-    public class UnityEventEx
+    public class ImoetUnityEvent
     {
         [SerializeField]
         private EventExecutionMode m_exeMode;
         [SerializeField]
-        private List<UnityEventExMethod> m_methodList = new List<UnityEventExMethod>();
+        private List<ImoetUnityEventMoethod> m_methodList = new List<ImoetUnityEventMoethod>();
 
-        public EventExecutionMode executionMode
-        {
-            get { return m_exeMode; }
-            set { m_exeMode = value; }
-        }
-        public StartCoroutineDelegate startCoroutineDelegate
-        {
-            get; set;
-        }
-        public bool isExecuting
-        {
-            get { return m_executing; }
-        }
+        public EventExecutionMode executionMode { get { return m_exeMode; } set { m_exeMode = value; } }
+        public StartCoroutineDelegate startCoroutineDelegate { get; set; }
+        public bool isExecuting { get { return m_executing; } }
 
         private bool m_executing;
 
-        public void Invoke()
-        {
+        public void Invoke() {
             Invoke(true);
         }
-        public void Invoke(int i)
-        {
+        public void Invoke(int i) {
             Invoke(i, false);
         }
-        public void InvokeAll()
-        {
+        public void InvokeAll() {
             InvokeAll(false);
         }
-        public UnityEventExMethod GetMethod(int i)
-        {
+        public ImoetUnityEventMoethod GetMethod(int i) {
             return m_methodList[i];
         }
-        public UnityEventExMethod[] GetMethods()
-        {
+        public ImoetUnityEventMoethod[] GetMethods() {
             return m_methodList.ToArray();
         }
-        public UnityEventExMethod AddEvent(Action action)
-        {
-            var newMethod = new UnityEventExMethod();
+        public ImoetUnityEventMoethod AddEvent(Action action) {
+            var newMethod = new ImoetUnityEventMoethod();
             newMethod.enable = true;
             newMethod.internalMethod = action.Method;
             newMethod.internalObject = (UnityEngine.Object)action.Target;
             m_methodList.Add(newMethod);
             return newMethod;
         }
-        public bool RemoveEvent(UnityEventExMethod eventMethod)
-        {
+        public bool RemoveEvent(ImoetUnityEventMoethod eventMethod) {
             return m_methodList.Remove(eventMethod);
         }
-        public UnityEventExMethod InsertEvent(int index, Action action)
-        {
-            var newMethod = new UnityEventExMethod();
+        public ImoetUnityEventMoethod InsertEvent(int index, Action action) {
+            var newMethod = new ImoetUnityEventMoethod();
             newMethod.enable = true;
             newMethod.internalMethod = action.Method;
             newMethod.internalObject = (UnityEngine.Object)action.Target;
             m_methodList.Insert(index, newMethod);
             return newMethod;
         }
-        public void Invoke(bool force)
-        {
-            if (!force)
-            {
-                if (m_executing)
-                    return;
-            }
-            prepareAllItem();
+        public void Invoke(bool force) {
+            if (!force && m_executing)
+                return;
+
+            _prepareAllItem();
             switch (m_exeMode)
             {
                 case EventExecutionMode.AllIn1:
                     for (int i = 0; i < m_methodList.Count; i++)
                     {
                         if (startCoroutineDelegate != null)
-                            startCoroutineDelegate(executeSelected(i));
+                            startCoroutineDelegate(_executeSelected(i));
                         else
-                            executeNonCoroutine(i);
+                            _executeNonCoroutine(i);
                     }
                     break;
                 case EventExecutionMode.OneBy1:
                     if (startCoroutineDelegate != null)
-                        startCoroutineDelegate(executeOneByOne());
+                        startCoroutineDelegate(_executeOneByOne());
                     else
-                        executeAll();
+                        _executeAll();
                     break;
             }
         }
         public void Invoke(int i, bool force)
         {
-            if (!force)
-            {
-                if (m_executing)
-                    return;
-            }
+            if (!force && m_executing)
+                return;
             m_methodList[i].m_executed = false;
             if (startCoroutineDelegate != null)
-                startCoroutineDelegate(executeSelected(i));
+                startCoroutineDelegate(_executeSelected(i));
             else
-                executeNonCoroutine(i);
+                _executeNonCoroutine(i);
         }
 
         public void InvokeAll(bool force)
         {
-            if (!force)
-            {
-                if (m_executing)
-                    return;
-            }
-            prepareAllItem();
+            if (!force && m_executing)
+                return;
+
+            _prepareAllItem();
             for (int i = 0; i < m_methodList.Count; i++)
-            {
                 Invoke(i);
-            }
         }
 
-        private void prepareAllItem()
+        private void _prepareAllItem()
         {
-            foreach (UnityEventExMethod method in m_methodList)
-            {
+            foreach (ImoetUnityEventMoethod method in m_methodList)
                 method.m_executed = false;
-            }
         }
-        private IEnumerator executeOneByOne()
+        private IEnumerator _executeOneByOne()
         {
             m_executing = true;
             for (int i = 0; i < m_methodList.Count; i++)
@@ -155,7 +125,7 @@ namespace Imoet.Unity.Events
             }
             m_executing = false;
         }
-        private IEnumerator executeSelected(int index)
+        private IEnumerator _executeSelected(int index)
         {
             m_executing = true;
             if (m_methodList[index].enable && !string.IsNullOrEmpty(m_methodList[index].m_methodName))
@@ -166,14 +136,12 @@ namespace Imoet.Unity.Events
             }
             m_executing = false;
         }
-        private void executeNonCoroutine(int index)
+        private void _executeNonCoroutine(int index)
         {
             if (m_methodList[index].enable)
-            {
                 m_methodList[index].Invoke();
-            }
         }
-        private void executeAll()
+        private void _executeAll()
         {
             for (int i = 0; i < m_methodList.Count; i++)
             {
@@ -183,5 +151,10 @@ namespace Imoet.Unity.Events
                 }
             }
         }
+    }
+
+    [System.Serializable]
+    public class ImoetUnityEvent<T> : ImoetUnityEvent {
+
     }
 }

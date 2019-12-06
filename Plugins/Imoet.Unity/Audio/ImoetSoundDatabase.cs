@@ -7,7 +7,7 @@ using UnityEditor;
 
 namespace Imoet.Unity.Audio
 {
-    public sealed class ImoetSoundDatabase : ScriptableObject
+    public sealed class ImoetSoundDatabase : UnityScriptableObject<ImoetSoundDatabase>
     {
         [ExeButton("GeneratePlaylist"), SerializeField]
         private bool m_generatePlaylist;
@@ -65,10 +65,8 @@ namespace Imoet.Unity.Audio
             string res = "";
 
             //Global Playlist
-            foreach (var sound in m_pack)
-            {
-                foreach (var clip in sound.audioClips)
-                {
+            foreach (var sound in m_pack) {
+                foreach (var clip in sound.audioClips) {
                     writer.AppendLine(string.Format("\t\t\tpublic const string {0} = \"{1}\";", clip.name.Replace(" ", "_"), clip.name));
                 }
             }
@@ -76,16 +74,14 @@ namespace Imoet.Unity.Audio
             writer = new StringBuilder();
 
             //Music Playlist
-            foreach (var clip in m_musicPack.audioClips)
-            {
+            foreach (var clip in m_musicPack.audioClips) {
                 writer.AppendLine(string.Format("\t\t\tpublic const string {0} = \"{1}\";", clip.name.Replace(" ", "_"), clip.name));
             }
             musicPlaylist = writer.ToString();
             writer = new StringBuilder();
 
             //SFX Playlist
-            foreach (var clip in m_sfxPack.audioClips)
-            {
+            foreach (var clip in m_sfxPack.audioClips) {
                 writer.AppendLine(string.Format("\t\t\tpublic const string {0} = \"{1}\";", clip.name.Replace(" ", "_"), clip.name));
             }
             sfxPlaylist = writer.ToString();
@@ -98,36 +94,27 @@ namespace Imoet.Unity.Audio
             System.IO.File.WriteAllText(fInfo.Directory + "/ImoetSoundPlaylist.cs", res);
             AssetDatabase.Refresh();
         }
+
         [MenuItem("Imoet/Sound/Create Database...")]
         private static void _createDB()
         {
-            var db = CreateInstance<ImoetSoundDatabase>();
-
-            AssetDatabase.CreateAsset(db, "Assets/Resources/ImoetSoundDatabase.asset");
-            AssetDatabase.SaveAssets();
-
-            EditorUtility.DisplayDialog("Database Creation", "New Sound Databases Has Been Created", "Ok");
-            Selection.activeObject = db;
-            Debug.Log("New Databases Has Been Created in: Assets/Resources/ImoetSoundDatabase.asset");
+            _CreateEditorResources("Assets/Resources/Databases/ImoetSoundDatabase.asset", (asset)=>{
+                //EditorUtility.DisplayDialog("Database Creation", "New Sound Databases Has Been Created", "Ok");
+                Debug.Log("New Databases Has Been Created in: Assets/Resources/ImoetSoundDatabase.asset");
+            });
         }
 
         [MenuItem("Imoet/Sound/Select Database")]
         private static void _selectDB()
         {
-            var db = AssetDatabase.LoadAssetAtPath("Assets/Resources/ImoetSoundDatabase.asset", typeof(ImoetSoundDatabase));
-            if (db == null)
-            {
+            if (!_SelectEditorResources("Assets/Resources/Databases/ImoetSoundDatabase.asset")) {
                 Debug.LogError("Failed to find ImoetSoundDatabase.asset, Please create a new one");
-            }
-            else
-            {
-                Selection.activeObject = db;
             }
         }
         [MenuItem("Imoet/Sound/Select Database", true)]
         private static bool _validateDB()
         {
-            return AssetDatabase.LoadAssetAtPath("Assets/Resources/ImoetSoundDatabase.asset", typeof(ImoetSoundDatabase)) != null;
+            return _ValidateEditorResource("Assets/Resources/Databases/ImoetSoundDatabase.asset");
         }
 #endif
     }

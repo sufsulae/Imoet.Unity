@@ -35,9 +35,9 @@ namespace Imoet.Unity.Events
         [SerializeField]
         private string m_name;
         [SerializeField]
-        private UnityEventEx m_event;
+        private ImoetUnityEvent m_event;
 
         public string name { get { return m_name; } }
-        public UnityEventEx events { get { return m_event; } }
+        public ImoetUnityEvent events { get { return m_event; } }
     }
 }

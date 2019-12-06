@@ -8,7 +8,7 @@ using UnityReadableType = Imoet.Unity.Utility.UnityExUtility.UnityReadableType;
 namespace Imoet.Unity.Events
 {
     [System.Serializable]
-    public class UnityEventExMethod
+    public class ImoetUnityEventMoethod
     {
         [SerializeField]
         private bool m_enable = true;

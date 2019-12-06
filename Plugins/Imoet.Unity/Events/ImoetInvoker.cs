@@ -8,10 +8,10 @@ namespace Imoet.Unity.Events
         [WideToggle]
         public bool forceExe;
 
-        public UnityEventEx OnEvent { get { return m_OnEvent; } }
+        public ImoetUnityEvent OnEvent { get { return m_OnEvent; } }
 
         [SerializeField]
-        private UnityEventEx m_OnEvent;
+        private ImoetUnityEvent m_OnEvent;
 
         void Awake() {
             m_OnEvent.startCoroutineDelegate = StartCoroutine;

@@ -7,19 +7,19 @@ namespace Imoet.Unity
     {
         [SerializeField]
         private static T m_instance;
-        public static T instance { get {
+        public static T current { get {
                 if (m_instance == null) {
                     m_instance = (T)FindObjectOfType(typeof(T));
                     if (m_instance == null) {
                         var singletonObject = new GameObject(typeof(T).Name + "(Singleton)");
                         m_instance = singletonObject.AddComponent<T>();
                         var t = m_instance as UnitySingleton<T>;
-                        t._onInstance();
+                        t.onInstance();
                     }
                 }
                 return m_instance;
             }
         }
-        protected virtual void _onInstance() { }
+        protected virtual void onInstance() { }
     }
 }

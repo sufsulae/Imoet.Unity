@@ -5,6 +5,7 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using Imoet.Unity.Utility;
+using UnityEngine.Events;
 using Type = System.Type;
 
 namespace Imoet.UnityEditor
@@ -72,6 +73,10 @@ namespace Imoet.UnityEditor
         /// Callback when DropDown menu is about to show. this also can be used to manipulate method name that represented in the menu
         /// </summary>
         public System.Func<Object, MethodInfo, string> onValidateMenuName { get; set; }
+        /// <summary>
+        /// Callback when SelectedItem is Showed in 
+        /// </summary>
+        public System.Func<UnityMethodSelectorItem,string> onSelectedMethodShowed { get; set; }
 
         private IEnumerable<Type> m_inspectedParamType = UnityExUtility.UnityReadableTypeList;
         private IEnumerable<Type> m_inspectedReturnType = new Type[] { typeof(void) };
@@ -93,9 +98,7 @@ namespace Imoet.UnityEditor
         {
             foreach (Type t in checker) {
                 if (t.IsAssignableFrom(type))
-                {
                     return true;
-                }
             }
             return false;
         }
@@ -127,20 +130,29 @@ namespace Imoet.UnityEditor
         private void _fillMenu()
         {
             if (onPopulateObjects != null)
-            {
                 targetObjects = onPopulateObjects(targetObjects);
-            }
 
             if (targetObjects == null)
-            {
                 return;
-            }
 
             foreach (Object obj in targetObjects)
             {
-                Type objType = obj.GetType();
-                MethodInfo[] objMethods = objType.GetMethods(m_binding);
-                foreach (MethodInfo objMethodInfo in objMethods)
+                var objType = obj.GetType();
+                var objMethods = new List<MethodInfo>(objType.GetMethods(m_binding));
+                var tempMethods = new List<MethodInfo>();
+
+                //Sorting Method so "Property" always first
+                for (int i = objMethods.Count-1; i > 0 ; i--) {
+                    var objMethod = objMethods[i];
+                    if (objMethod.Name.StartsWith("set_") || objMethod.Name.StartsWith("get_"))
+                    {
+                        tempMethods.Add(objMethod);
+                        objMethods.RemoveAt(i);
+                    }
+                }
+                objMethods.InsertRange(0, tempMethods);
+
+                foreach (var objMethodInfo in objMethods)
                 {
                     bool valid = false;
                     valid = _defaultValidatingMethod(obj, objMethodInfo);
@@ -152,13 +164,9 @@ namespace Imoet.UnityEditor
                         var validMethods = new UnityMethodSelectorItem(obj, objMethodInfo);
                         string menuPath = null;
                         if (onValidateMenuName != null)
-                        {
                             menuPath = onValidateMenuName(obj, objMethodInfo);
-                        }
                         else
-                        {
                             menuPath = validMethods.m_selectedObjectType.Name + "/" + validMethods.m_selectedMethod.Name;
-                        }
 
                         m_menu.AddItem(new GUIContent(menuPath), false, _onMenuSelected, validMethods);
                     }
@@ -182,8 +190,12 @@ namespace Imoet.UnityEditor
             string buttonName = "None";
             if (selectedItem != null && selectedItem.m_selectedMethod != null)
             {
-                string methodName = selectedItem.m_selectedMethod.Name.Replace("set_", "").Replace("get_", "");
-                buttonName = selectedItem.m_selectedMethod.DeclaringType.Name + "." + methodName;
+                if (onSelectedMethodShowed != null)
+                    buttonName = onSelectedMethodShowed(selectedItem);
+                else {
+                    string methodName = selectedItem.m_selectedMethod.Name.Replace("set_", "").Replace("get_", "");
+                    buttonName = selectedItem.m_selectedMethod.DeclaringType.Name + "." + methodName;
+                }
             }
             if (GUI.Button(rect, buttonName, m_style.dropDown))
             {

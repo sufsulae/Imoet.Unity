@@ -8,7 +8,7 @@ using System.Reflection;
 using Imoet.Unity.Utility;
 
 namespace Imoet.UnityEditor {
-    [CustomPropertyDrawer(typeof(UnityEventEx), true)]
+    [CustomPropertyDrawer(typeof(ImoetUnityEvent), true)]
     public class UnityEventExDrawer : PropertyDrawer
     {
         private ReorderableList m_list;

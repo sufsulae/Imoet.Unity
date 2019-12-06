@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace Imoet.Unity
 {
+    /// <summary>
+    /// Rectangle Corner Position in 3D Space
+    /// </summary>
     [Serializable]
     public struct RectCorner
     {
@@ -31,7 +34,7 @@ namespace Imoet.Unity
         }
 
         /// <summary>
-        ///     Get the size (width and height) of this active Rect representative in <see cref="Vector2" />
+        ///     Get the size (width and height) of this active Rect represent in <see cref="Vector2" />
         /// </summary>
         /// <value>The size.</value>
         public SizeF size
@@ -53,7 +56,7 @@ namespace Imoet.Unity
                 throw new IndexOutOfRangeException();
             }
         }
-        public static bool operator ==(RectCorner l, RectCorner r)
+        public static bool operator == (RectCorner l, RectCorner r)
         {
             for (int i = 0; i < 4; i++)
             {

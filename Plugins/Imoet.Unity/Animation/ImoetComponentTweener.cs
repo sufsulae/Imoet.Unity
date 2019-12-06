@@ -135,7 +135,7 @@ namespace Imoet.Unity.Animation
                         var aB = val_byte;
                         aB.tweenerSetting = m_setting;
                         aB.Initialize();
-                        aB.tweener.tweenCalc = (progress) => {
+                        aB.tweener.tweenCalcValue = (progress) => {
                             return (byte)(aB.valStart + (aB.valEnd - aB.valStart) * progress);
                         };
                         aB.tweener.tweenDelegate = (value) => {
@@ -147,7 +147,7 @@ namespace Imoet.Unity.Animation
                         var aS = val_short;
                         aS.tweenerSetting = m_setting;
                         aS.Initialize();
-                        aS.tweener.tweenCalc = (progress) => {
+                        aS.tweener.tweenCalcValue = (progress) => {
                             return (short)(aS.valStart + (aS.valEnd - aS.valStart) * progress);
                         };
                         aS.tweener.tweenDelegate = (value) => {
@@ -159,7 +159,7 @@ namespace Imoet.Unity.Animation
                         var aI = val_int;
                         aI.tweenerSetting = m_setting;
                         aI.Initialize();
-                        aI.tweener.tweenCalc = (progress) => {
+                        aI.tweener.tweenCalcValue = (progress) => {
                             return (int)(aI.valStart + (aI.valEnd - aI.valStart) * progress);
                         };
                         aI.tweener.tweenDelegate = (value) => {
@@ -171,7 +171,7 @@ namespace Imoet.Unity.Animation
                         var aF = val_float;
                         aF.tweenerSetting = m_setting;
                         aF.Initialize();
-                        aF.tweener.tweenCalc = (progress) => {
+                        aF.tweener.tweenCalcValue = (progress) => {
                             return (aF.valStart + (aF.valEnd - aF.valStart) * progress);
                         };
                         aF.tweener.tweenDelegate = (value) => {
@@ -183,7 +183,7 @@ namespace Imoet.Unity.Animation
                         var aD = val_double;
                         aD.tweenerSetting = m_setting;
                         aD.Initialize();
-                        aD.tweener.tweenCalc = (progress) => {
+                        aD.tweener.tweenCalcValue = (progress) => {
                             return (aD.valStart + (aD.valEnd - aD.valStart) * progress);
                         };
                         aD.tweener.tweenDelegate = (value) => {
@@ -195,7 +195,7 @@ namespace Imoet.Unity.Animation
                         var aV2 = val_vector2;
                         aV2.tweenerSetting = m_setting;
                         aV2.Initialize();
-                        aV2.tweener.tweenCalc = (progress) => {
+                        aV2.tweener.tweenCalcValue = (progress) => {
                             return (aV2.valStart + (aV2.valEnd - aV2.valStart) * progress);
                         };
                         aV2.tweener.tweenDelegate = (value) => {
@@ -207,7 +207,7 @@ namespace Imoet.Unity.Animation
                         var aV3 = val_vector3;
                         aV3.tweenerSetting = m_setting;
                         aV3.Initialize();
-                        aV3.tweener.tweenCalc = (progress) => {
+                        aV3.tweener.tweenCalcValue = (progress) => {
                             return (aV3.valStart + (aV3.valEnd - aV3.valStart) * progress);
                         };
                         aV3.tweener.tweenDelegate = (value) => {
@@ -219,7 +219,7 @@ namespace Imoet.Unity.Animation
                         var aV4 = val_vector4;
                         aV4.tweenerSetting = m_setting;
                         aV4.Initialize();
-                        aV4.tweener.tweenCalc = (progress) => {
+                        aV4.tweener.tweenCalcValue = (progress) => {
                             return (aV4.valStart + (aV4.valEnd - aV4.valStart) * progress);
                         };
                         aV4.tweener.tweenDelegate = (value) => {
@@ -231,7 +231,7 @@ namespace Imoet.Unity.Animation
                         var aQ = val_quaternion;
                         aQ.tweenerSetting = m_setting;
                         aQ.Initialize();
-                        aQ.tweener.tweenCalc = (progress) => {
+                        aQ.tweener.tweenCalcValue = (progress) => {
                             return Quaternion.Lerp(aQ.valStart, aQ.valEnd, progress);
                         };
                         aQ.tweener.tweenDelegate = (value) => {
@@ -243,7 +243,7 @@ namespace Imoet.Unity.Animation
                         var aR = val_rect;
                         aR.tweenerSetting = m_setting;
                         aR.Initialize();
-                        aR.tweener.tweenCalc = (progress) => {
+                        aR.tweener.tweenCalcValue = (progress) => {
                             var res = default(Rect);
                             var resStart = aR.tweener.valueStart;
                             var resEnd = aR.tweener.valueEnd;
@@ -262,7 +262,7 @@ namespace Imoet.Unity.Animation
                         var aCol = val_color;
                         aCol.tweenerSetting = m_setting;
                         aCol.Initialize();
-                        aCol.tweener.tweenCalc = (progress) => {
+                        aCol.tweener.tweenCalcValue = (progress) => {
                             return (aCol.valStart + (aCol.valEnd - aCol.valStart) * progress);
                         };
                         aCol.tweener.tweenDelegate = (value) => {
@@ -274,7 +274,7 @@ namespace Imoet.Unity.Animation
                         var aCol32 = val_color32;
                         aCol32.tweenerSetting = m_setting;
                         aCol32.Initialize();
-                        aCol32.tweener.tweenCalc = (progress) => {
+                        aCol32.tweener.tweenCalcValue = (progress) => {
                             return Color32.Lerp(aCol32.valStart, aCol32.valEnd, progress);
                         };
                         aCol32.tweener.tweenDelegate = (value) => {

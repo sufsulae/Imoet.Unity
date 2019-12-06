@@ -22,7 +22,7 @@ namespace Imoet.Unity.Animation
         /// <summary>
         /// Delegate to determine the calculation of tween, must be assigned to make it work
         /// </summary>
-        public Func<float, T> tweenCalc { get; set; }
+        public TweenCalculateValue<T> tweenCalcValue { get; set; }
         /// <summary>
         /// Setting for the tween
         /// </summary>
@@ -42,7 +42,7 @@ namespace Imoet.Unity.Animation
         /// <summary>
         /// Delegate that will executed when this tween is working
         /// </summary>
-        public Action onTweenEvent { get; set; }
+        public Action onTweening { get; set; }
 
         /// <summary>
         /// Function to Starting the tween
@@ -150,16 +150,16 @@ namespace Imoet.Unity.Animation
                             tempSetting.direction = TweenDirection.Reverse;
                         else
                             tempSetting.direction = TweenDirection.Forward;
-						if(onTweenEvent != null)
-							onTweenEvent.Invoke();
+						if(onTweening != null)
+							onTweening.Invoke();
                     }
                     break;
                 case TweenMode.Loop:
                     if (tempSetting.progress > 1 || tempSetting.progress < 0)
                     {
                         tempSetting.progress = 0;
-                        if(onTweenEvent != null)
-							onTweenEvent.Invoke();
+                        if(onTweening != null)
+							onTweening.Invoke();
                     }
                     break;
                 case TweenMode.Once:
@@ -167,14 +167,14 @@ namespace Imoet.Unity.Animation
                     {
                         tempSetting.progress = Mathf.Clamp01(tempSetting.progress);
                         status = TweenStatus.Stop;
-						if(onTweenEvent != null)
-							onTweenEvent.Invoke();
+						if(onTweening != null)
+							onTweening.Invoke();
                     }
                     break;
             }
             //Apply Tween
-            if (tweenCalc != null && tweenDelegate != null) {
-                tweenDelegate.Invoke(tweenCalc.Invoke(Tween.Evaluate(0.0f, 1.0f, tempSetting.progress, tempSetting.type)));
+            if (tweenCalcValue != null && tweenDelegate != null) {
+                tweenDelegate.Invoke(tweenCalcValue.Invoke(Tween.Evaluate(0.0f, 1.0f, tempSetting.progress, tempSetting.type)));
             }
             //Apply Updated Setting
             setting = tempSetting;
@@ -184,6 +184,84 @@ namespace Imoet.Unity.Animation
         /// </summary>
         public virtual void Update() {
             Update(Time.deltaTime);
+        }
+
+        //Helper Function
+        public static Tweener<float> CreateTweenFloat(float start, float end) {
+            var tween = new Tweener<float>();
+            tween.valueStart = start;
+            tween.valueEnd = end;
+            tween.tweenCalcValue = (percentage) => {
+                return start + (end - start) * percentage;
+            };
+            return tween;
+        }
+        public static Tweener<double> CreateTweenDouble(double start, double end) {
+            var tween = new Tweener<double>();
+            tween.valueStart = start;
+            tween.valueEnd = end;
+            tween.tweenCalcValue = (percentage) => {
+                return start + (end - start) * percentage;
+            };
+            return tween;
+        }
+        public static Tweener<int> CreateTweenInt(int start, int end)
+        {
+            var tween = new Tweener<int>();
+            tween.valueStart = start;
+            tween.valueEnd = end;
+            tween.tweenCalcValue = (percentage) => {
+                return (int)(start + (end - start) * percentage);
+            };
+            return tween;
+        }
+        public static Tweener<Vector2> CreateTweenVector2(Vector2 start, Vector2 end) {
+            var tween = new TweenVector2();
+            tween.valueStart = start;
+            tween.valueEnd = end;
+            return tween;
+        }
+        public static Tweener<Vector3> CreateTweenVector3(Vector3 start, Vector3 end)
+        {
+            var tween = new TweenVector3();
+            tween.valueStart = start;
+            tween.valueEnd = end;
+            return tween;
+        }
+        public static Tweener<Vector4> CreateTweenVector4(Vector4 start, Vector4 end)
+        {
+            var tween = new TweenVector4();
+            tween.valueStart = start;
+            tween.valueEnd = end;
+            return tween;
+        }
+        public static Tweener<Quaternion> CreateTweenQuaternion(Quaternion start, Quaternion end)
+        {
+            var tween = new TweenQuaternion();
+            tween.valueStart = start;
+            tween.valueEnd = end;
+            return tween;
+        }
+        public static Tweener<Rect> CreateTweenRect(Rect start, Rect end)
+        {
+            var tween = new TweenRect();
+            tween.valueStart = start;
+            tween.valueEnd = end;
+            return tween;
+        }
+        public static Tweener<Color> CreateTweenColor(Color start, Color end)
+        {
+            var tween = new TweenColor();
+            tween.valueStart = start;
+            tween.valueEnd = end;
+            return tween;
+        }
+        public static Tweener<Color32> CreateTweenColor32(Color32 start, Color32 end)
+        {
+            var tween = new TweenColor32();
+            tween.valueStart = start;
+            tween.valueEnd = end;
+            return tween;
         }
     }
 }

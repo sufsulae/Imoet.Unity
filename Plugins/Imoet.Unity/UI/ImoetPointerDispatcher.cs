@@ -9,10 +9,10 @@ namespace Imoet.Unity.UI
 {
     [DisallowMultipleComponent]
     //[RequireComponent(typeof(Graphic))]
-    public class PointerDispatcher : MonoBehaviour
+    public class ImoetPointerDispatcher : MonoBehaviour
     {
         #region Public Property
-        public static PointerDispatcher instance { get; private set; }
+        public static ImoetPointerDispatcher instance { get; private set; }
         public List<PointerEventData> pointers
         {
             get
@@ -75,6 +75,8 @@ namespace Imoet.Unity.UI
                 img.hideFlags = m_showRequiredComp ? HideFlags.NotEditable : HideFlags.HideInInspector;
                 m_graphic = img;
             }
+
+            transform.SetAsFirstSibling();
 
             //Register Some function to EventTrigger
             //For easy management
@@ -252,20 +254,16 @@ namespace Imoet.Unity.UI
             if (data == null)
                 return null;
             Ray ray;
-            if (checkPressed)
-                ray = m_eventCamera.ScreenPointToRay(data.pressPosition);
-            else
-                ray = m_eventCamera.ScreenPointToRay(data.position);
+            Vector2 pos = checkPressed ? data.pressPosition:data.position;
+            ray = m_eventCamera.ScreenPointToRay(new Vector3(pos.x, pos.y, m_eventCamera.farClipPlane));
             GameObject tgt = null;
 
             RaycastHit rayHit;
-            if (Physics.Raycast(ray, out rayHit) && rayHit.collider)
-            {
+            if (Physics.Raycast(ray, out rayHit) && rayHit.collider) {
                 tgt = rayHit.collider.gameObject;
             }
 
-            if (tgt == null)
-            {
+            if (tgt == null) {
                 var rayHit2D = Physics2D.Raycast(ray.origin, ray.direction);
                 if (rayHit2D.collider)
                     tgt = rayHit2D.collider.gameObject;
@@ -279,15 +277,15 @@ namespace Imoet.Unity.UI
                 return;
 
             var objComps = obj.GetComponents<Component>();
-            var compsPtr = new List<PointerReciever>();
-            var tgtT = typeof(PointerReciever);
+            var compsPtr = new List<ImoetPointerReciever>();
+            var tgtT = typeof(ImoetPointerReciever);
 
             foreach (var objComp in objComps)
             {
                 var objCompT = objComp.GetType();
-                if (objComp is PointerReciever || objCompT.IsAssignableFrom(tgtT))
+                if (objComp is ImoetPointerReciever || objCompT.IsAssignableFrom(tgtT))
                 {
-                    var objCompPtr = (PointerReciever)objComp;
+                    var objCompPtr = (ImoetPointerReciever)objComp;
                     var objCompPtrT = objCompPtr.GetType();
                     var objCompPtrTBase = objCompPtrT;
                     while (objCompPtrTBase != tgtT) {
@@ -295,7 +293,7 @@ namespace Imoet.Unity.UI
                     }
                     var objCompFieldDisp = objCompPtrTBase.GetField("m_dispatcher", BindingFlags.Instance | BindingFlags.NonPublic);
                     objCompFieldDisp.SetValue(objCompPtr, this);
-                    compsPtr.Add((PointerReciever)objComp);
+                    compsPtr.Add((ImoetPointerReciever)objComp);
                 }
             }
 
@@ -379,9 +377,9 @@ namespace Imoet.Unity.UI
         }
         class PackedPointer {
             public GameObject obj;
-            public Dictionary<PointerReciever, List<MethodInfo>> methods;
+            public Dictionary<ImoetPointerReciever, List<MethodInfo>> methods;
             public PackedPointer() {
-                methods = new Dictionary<PointerReciever, List<MethodInfo>>();
+                methods = new Dictionary<ImoetPointerReciever, List<MethodInfo>>();
             }
         }
         #endregion
