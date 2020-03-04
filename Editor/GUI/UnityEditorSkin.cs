@@ -1,6 +1,5 @@
 ﻿using UnityEditor;
 using UnityEngine;
-using System.Reflection;
 
 namespace Imoet.UnityEditor
 {
@@ -13,21 +12,12 @@ namespace Imoet.UnityEditor
         }
 
         public static GUIStyle windowBottomResize { get { return GetInternalStyle("WindowBottomResize"); } }
-#if UNITY_5 || UNITY_5_3_OR_NEWER
+
         public static GUIStyle helpBox { get { return new GUIStyle(EditorStyles.helpBox); } }
         public static GUIStyle windowCloseButton { get { return new GUIStyle(GetInternalStyle("WinBtnClose")); } }
         public static GUIStyle windowMinButton { get { return new GUIStyle(GetInternalStyle("WinBtnMin")); } }
         public static GUIStyle windowMaxButton { get { return new GUIStyle(GetInternalStyle("WinBtnMax")); } }
-#else
-		public static GUIStyle helpBox{get{
-				EditorStyles styles = new EditorStyles();
-				MethodInfo propInfo = styles.GetType().GetMethod("get_helpBox",BindingFlags.Instance|BindingFlags.Static|BindingFlags.NonPublic|BindingFlags.GetProperty);
-				return (GUIStyle)propInfo.Invoke(styles,null);
-			}}
-		public static GUIStyle windowCloseButton{get{return new GUIStyle(GetInternalStyle("WinBtnCloseWin"));}}
-		public static GUIStyle windowMinButton{get{return new GUIStyle(GetInternalStyle("WinBtnMinWin"));}}
-		public static GUIStyle windowMaxButton{get{return new GUIStyle(GetInternalStyle("WinBtnMaxWin"));}}
-#endif
+
         public static GUIStyle RLdraggingHandle { get { return new GUIStyle(GetInternalStyle("RL DragHandle")); } }
         public static GUIStyle RLheaderBackground { get { return new GUIStyle(GetInternalStyle("RL Header")); } }
         public static GUIStyle RLfooterBackground { get { return new GUIStyle(GetInternalStyle("RL Footer")); } }

@@ -12,7 +12,8 @@ namespace Imoet.Unity
         protected static T _GetInstance(string filePath) {
             if (_instance == null) {
                 _instance = Resources.Load<T>(filePath);
-                (_instance as UnityScriptableObject<T>)._onCreate();
+                if(_instance != null)
+                    (_instance as UnityScriptableObject<T>)._onCreate();
             }   
             return _instance;
         }
@@ -55,7 +56,7 @@ namespace Imoet.Unity
             return db != null;
 #else
             //Empty
-            return;
+            return false;
 #endif
         }
     }

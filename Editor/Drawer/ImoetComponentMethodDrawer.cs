@@ -15,24 +15,33 @@ namespace Imoet.UnityEditor
         }
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
+            //Get Properties
             var _targetObject = property.FindPropertyRelative("_targetObject");
             var _targetMethodName = property.FindPropertyRelative("_targetMethodName");
             var _targetMethodAsmName = property.FindPropertyRelative("_targetMethodAsmName");
             var _paramAsmName = property.FindPropertyRelative("_paramAsmName");
 
+            //Get Parameter Type (if available)
             Type paramAsmType = null;
             if (_paramAsmName != null)
                 paramAsmType = Type.GetType(_paramAsmName.stringValue);
 
-            var rectSizeLeft = EditorGUI.PrefixLabel(position, new GUIContent(property.displayName +"("+ paramAsmType + ")"));
-
+            //Draw PrefixLabel
+            var thisLabel = label.text;
+            if (!string.IsNullOrEmpty(thisLabel))
+                thisLabel += "(" + paramAsmType + ")";
+            label.text = thisLabel;
+            var rectSizeLeft = EditorGUI.PrefixLabel(position, label);
+            
+            //Draw Object Picker
             _targetObject.objectReferenceValue = EditorGUI.ObjectField(
-                new Rect(rectSizeLeft.x, rectSizeLeft.y, rectSizeLeft.width/2f, rectSizeLeft.height),
+                new Rect(rectSizeLeft.x - EditorGUI.indentLevel * 5.0f, rectSizeLeft.y, rectSizeLeft.width/2f + EditorGUI.indentLevel * 5.0f, rectSizeLeft.height),
                 new GUIContent(""), _targetObject.objectReferenceValue,typeof(Component),true);
 
             var tgtDrawer = _targetObject.objectReferenceValue;
             var isTgtDrawerComp = tgtDrawer is Component;
 
+            //Draw Method Picker
             var methodDrawer = new UnityMethodSelector();
             methodDrawer.binding = BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod;
             methodDrawer.maxInspectedParameter = 0;

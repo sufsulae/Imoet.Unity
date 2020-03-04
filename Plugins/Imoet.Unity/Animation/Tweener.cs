@@ -20,7 +20,7 @@ namespace Imoet.Unity.Animation
         /// </summary>
         public Action<T> tweenDelegate { get; set; }
         /// <summary>
-        /// Delegate to determine the calculation of tween, must be assigned to make it work
+        /// Delegate to determine the calculation of tween
         /// </summary>
         public TweenCalculateValue<T> tweenCalcValue { get; set; }
         /// <summary>
