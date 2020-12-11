@@ -21,9 +21,8 @@ namespace Imoet.Unity.Animation
         }
         private void Start() {
             if (m_autoPlay)
-                foreach (var item in m_items) {
+                foreach (var item in m_items)
                     item.StartTween();
-                }
         }
 
         private void Update() {
@@ -125,8 +124,7 @@ namespace Imoet.Unity.Animation
 
             public void Initialize() {
                 m_methodInfo = m_component.GetType().GetMethod(m_methodName);
-                if (m_methodInfo == null)
-                {
+                if (m_methodInfo == null) {
                     Debug.LogError("Failed to find a Method: " + m_methodInfo);
                     return;
                 }
@@ -184,6 +182,7 @@ namespace Imoet.Unity.Animation
                         aD.tweenerSetting = m_setting;
                         aD.Initialize();
                         aD.tweener.tweenCalcValue = (progress) => {
+                            Debug.Log("Progress: " + progress);
                             return (aD.valStart + (aD.valEnd - aD.valStart) * progress);
                         };
                         aD.tweener.tweenDelegate = (value) => {

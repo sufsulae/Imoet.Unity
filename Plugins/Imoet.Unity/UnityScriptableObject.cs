@@ -19,19 +19,19 @@ namespace Imoet.Unity
         }
 
         protected virtual void _onCreate() { }
-
         protected static void _CreateEditorResources(string filePath, Action<T> OnResourceCreated = null) {
 #if UNITY_EDITOR
+            var path = "Assets/Resources/" + filePath + ".asset";
             var inst = CreateInstance<T>();
 
-            var fInfo = new FileInfo(filePath);
+            var fInfo = new FileInfo(path);
             var fDir = fInfo.Directory;
             if (!fDir.Exists)
                 Directory.CreateDirectory(fDir.FullName);
             
-            AssetDatabase.CreateAsset(inst, filePath);
+            AssetDatabase.CreateAsset(inst, path);
             AssetDatabase.SaveAssets();
-            OnResourceCreated?.Invoke(_GetInstance(filePath));
+            OnResourceCreated?.Invoke(_GetInstance(path));
 
             Selection.activeObject = inst;
 #else
@@ -41,16 +41,17 @@ namespace Imoet.Unity
         }
         protected static bool _ValidateEditorResource(string filePath) {
 #if UNITY_EDITOR
-            return AssetDatabase.LoadAssetAtPath(filePath, typeof(T)) != null;
+            var path = "Assets/Resources/" + filePath + ".asset";
+            return AssetDatabase.LoadAssetAtPath(path, typeof(T)) != null;
 #else
             //Empty
             return false;
 #endif
         }
-
         protected static bool _SelectEditorResources(string filePath) {
 #if UNITY_EDITOR
-            var db = AssetDatabase.LoadAssetAtPath(filePath, typeof(T));
+            var path = "Assets/Resources/" + filePath + ".asset";
+            var db = AssetDatabase.LoadAssetAtPath(path, typeof(T));
             if(db != null)
                 Selection.activeObject = db;
             return db != null;

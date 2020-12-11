@@ -82,7 +82,7 @@ namespace Imoet.Unity
 #endif
         #endregion
 
-#region Equal Operator
+        #region Equal Operator
         public static bool operator ==(SizeF left, SizeF right)
         {
             return left.width == right.width && left.height == right.height;
@@ -91,7 +91,7 @@ namespace Imoet.Unity
         {
             return left.width != right.width || left.height == right.height;
         }
-#endregion
+        #endregion
 
         public override bool Equals(object obj)
         {
@@ -99,10 +99,12 @@ namespace Imoet.Unity
                 return this == (SizeF)obj;
             return false;
         }
+
         public override int GetHashCode()
         {
             return this.width.GetHashCode() + this.height.GetHashCode();
         }
+
         public override string ToString()
         {
             return string.Format("x:{0} y:{1}", this.width, this.height);

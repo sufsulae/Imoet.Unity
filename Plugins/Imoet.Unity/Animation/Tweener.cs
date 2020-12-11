@@ -10,10 +10,6 @@ namespace Imoet.Unity.Animation
     [Serializable]
     public class Tweener<T> : ITweener
     {
-        //Compatibility for reflection
-        private TweenSetting m_setting;
-        private TweenStatus m_status;
-        private T m_valStart, m_valEnd;
 
         /// <summary>
         /// Delegate to process / apply calculated tween,must be assigned to make it work
@@ -26,19 +22,19 @@ namespace Imoet.Unity.Animation
         /// <summary>
         /// Setting for the tween
         /// </summary>
-        public TweenSetting setting { get { return m_setting; } set { m_setting = value; } }
+        public TweenSetting setting { get; set; } = default(TweenSetting);
         /// <summary>
         /// Status of Tween
         /// </summary>
-        public TweenStatus status { get { return m_status; } private set { m_status = value; } }
+        public TweenStatus status { get; private set; } = TweenStatus.Stop;
         /// <summary>
         /// Start Value to tween
         /// </summary>
-        public T valueStart { get { return m_valStart; } set { m_valStart = value; } }
+        public T valueStart { get; set; }
         /// <summary>
         /// End Value to tween
         /// </summary>
-        public T valueEnd { get { return m_valEnd; } set { m_valEnd = value; } }
+        public T valueEnd { get; set; }
         /// <summary>
         /// Delegate that will executed when this tween is working
         /// </summary>
@@ -49,11 +45,16 @@ namespace Imoet.Unity.Animation
         /// </summary>
         public virtual void StartTween()
         {
-            if (valueStart.Equals(valueEnd))
+            if (valueStart.Equals(valueEnd)) {
+                Debug.Log("ValueStart and ValueEnd are Equal, Ignoring!");
                 return;
+            }
             var t_set = setting;
             if (!t_set.forceTween && status == TweenStatus.Tween)
+            {
+                Debug.Log("Tweener is Tweening!");
                 return;
+            }
             status = TweenStatus.Tween;
             if (status != TweenStatus.Pause)
             {
@@ -127,11 +128,12 @@ namespace Imoet.Unity.Animation
         /// <param name="updateTime"></param>
         public virtual void Update(float updateTime)
         {
+            if (status != TweenStatus.Tween)
+                return;
             var tempSetting = setting;
             //Get Last Status and stop if we already reach the end
-            if (status != TweenStatus.Tween || setting.duration == 0) {
-                if(setting.duration == 0)
-                    Debug.LogWarning("You Are Trying to Play Tweener while duration is 0, ignoring");
+            if (status != TweenStatus.Tween && setting.duration == 0) {
+                status = TweenStatus.Stop;
                 return;
             }
             //Try to fix in case direction is Zero

@@ -5,8 +5,7 @@ using Imoet.Unity.UI;
 namespace Imoet.Unity {
     public abstract class ImoetPointerReciever : MonoBehaviour
     {
-        private ImoetPointerDispatcher m_dispatcher = null;
-        protected ImoetPointerDispatcher dispatcher { get { return m_dispatcher; } }
+        protected ImoetPointerDispatcher dispatcher { get; } = null;
         private ImoetPointerEventDataEvent[] m_pointerEventDelegate = new ImoetPointerEventDataEvent[12];
 
         public ImoetPointerEventDataEvent onPointerClick { get { return _getEvent(0); } }

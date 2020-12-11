@@ -5,53 +5,6 @@ namespace Imoet.Unity
 {
     public static class UnityCommonUtility
     {
-        private static Vector3[] _tempCorner;
-        static UnityCommonUtility()
-        {
-            _tempCorner = new Vector3[4];
-        }
-
-        #region RectTransform Utility
-        public static RectCorner GetWorldCorners2D(this RectTransform tr)
-        {
-            tr.GetWorldCorners(_tempCorner);
-            return new RectCorner(_tempCorner[1], _tempCorner[2], _tempCorner[3], _tempCorner[0]);
-        }
-        public static RectCorner GetLocalCorners2D(this RectTransform tr)
-        {
-            tr.GetLocalCorners(_tempCorner);
-            return new RectCorner(_tempCorner[1], _tempCorner[2], _tempCorner[3], _tempCorner[0]);
-        }
-        public static RectTransform GetParentRect(this RectTransform v)
-        {
-            if (v.parent)
-                return v.parent.GetComponent<RectTransform>();
-            return null;
-        }
-        public static void AutoSetAnchor(this RectTransform r)
-        {
-            RectTransform pRect = r.GetParentRect();
-            if (pRect == null)
-                return;
-            var _offsetMin = r.offsetMin;
-            var _offsetMax = r.offsetMax;
-            var _anchorMin = r.anchorMin;
-            var _anchorMax = r.anchorMax;
-            var pRectRect = pRect.rect;
-            var anchorMin = new UnityEngine.Vector2(
-                    _anchorMin.x + (_offsetMin.x / pRectRect.width),
-                    _anchorMin.y + (_offsetMin.y / pRectRect.height)
-                );
-            var anchorMax = new UnityEngine.Vector2(
-                    _anchorMax.x + (_offsetMax.x / pRectRect.width),
-                    _anchorMax.y + (_offsetMax.y / pRectRect.height)
-                );
-            r.anchorMin = anchorMin;
-            r.anchorMax = anchorMax;
-            r.offsetMin = r.offsetMax = UnityEngine.Vector2.zero;
-        }
-        #endregion
-
         #region Object Utility
         public static T[] GetAllComponentInChildren<T>(this GameObject tr)
         {

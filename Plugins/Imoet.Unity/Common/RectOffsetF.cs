@@ -11,6 +11,7 @@
             this.bottom = bottom;
             this.left = left;
         }
+
         public float this[int idx]
         {
             get
@@ -25,6 +26,7 @@
                 throw new System.IndexOutOfRangeException();
             }
         }
+
         public static bool operator ==(RectOffsetF l, RectOffsetF r)
         {
             for (int i = 0; i < 4; i++)
