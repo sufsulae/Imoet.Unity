@@ -36,6 +36,17 @@ namespace Imoet.Unity.Animation
         /// </summary>
         public T valueEnd { get; set; }
         /// <summary>
+        /// Progress
+        /// </summary>
+        public float progress {
+            get { return setting.progress; }
+            set {
+                var set = setting;
+                set.progress = value;
+                setting = set;
+            }
+        }
+        /// <summary>
         /// Delegate that will executed when this tween is working
         /// </summary>
         public Action onTweening { get; set; }
