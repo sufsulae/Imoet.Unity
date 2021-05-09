@@ -8,8 +8,8 @@ namespace Imoet.Unity.Events
 {
     public enum EventExecutionMode
     {
-        AllIn1,
-        OneBy1
+        AllInOne,
+        OneByOne
     }
     public delegate Coroutine StartCoroutineDelegate(IEnumerator enumerator);
 
@@ -68,7 +68,7 @@ namespace Imoet.Unity.Events
             _prepareAllItem();
             switch (m_exeMode)
             {
-                case EventExecutionMode.AllIn1:
+                case EventExecutionMode.AllInOne:
                     for (int i = 0; i < m_methodList.Count; i++)
                     {
                         if (startCoroutineDelegate != null)
@@ -77,7 +77,7 @@ namespace Imoet.Unity.Events
                             _executeNonCoroutine(i);
                     }
                     break;
-                case EventExecutionMode.OneBy1:
+                case EventExecutionMode.OneByOne:
                     if (startCoroutineDelegate != null)
                         startCoroutineDelegate(_executeOneByOne());
                     else

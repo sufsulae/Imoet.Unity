@@ -5,6 +5,13 @@ namespace Imoet.Unity.Animation
 {
     [RequireComponent(typeof(ImoetTweener))]
     public class ImoetTransformTweener : MonoBehaviour {
+        [SerializeField]
+        private Vector3 m_from;
+        [SerializeField]
+        private Vector3 m_to;
+        [SerializeField]
+        private TweenSetting m_setting;
+
 
         [SerializeField]
         private FromToSettingVector3 m_pos;

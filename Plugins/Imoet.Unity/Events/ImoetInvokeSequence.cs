@@ -27,6 +27,16 @@ namespace Imoet.Unity.Events
         public void Invoke(int idx) {
             m_sequence[idx].events.Invoke();
         }
+        private void Awake() {
+            foreach (var seq in m_sequence) {
+                seq.events.startCoroutineDelegate = StartCoroutine;
+            }
+        }
+        private void Start()
+        {
+            if (m_autoExec)
+                Invoke();
+        }
     }
 
     [System.Serializable]
