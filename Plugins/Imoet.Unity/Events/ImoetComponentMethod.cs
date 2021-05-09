@@ -108,7 +108,7 @@ namespace Imoet.Unity.Events
         }
 
         public override void Invoke() {
-            Invoke(default);
+            Invoke(default(T));
         }
 
         public virtual void Invoke(T param) {

@@ -170,7 +170,7 @@ namespace Imoet.Unity {
             public Config(
                 int numOfColumn = 1,
                 int numOfRow = 1,
-                Vector3 cellSize = default,
+                Vector3 cellSize = default(Vector3),
                 Anchor anchor = Anchor.MiddleCenter,
                 Swizzle swizzle = Swizzle.XYZ)
             {

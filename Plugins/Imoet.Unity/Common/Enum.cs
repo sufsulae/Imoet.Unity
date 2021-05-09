@@ -3,7 +3,13 @@
     public enum ObjectSpace
     {
         World,
-        Local,
-        Self
+        Local
+    }
+
+    public enum SameAsSource
+    {
+        None,
+        From,
+        To
     }
 }

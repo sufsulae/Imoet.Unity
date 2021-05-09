@@ -190,4 +190,65 @@ namespace Imoet.Unity.Animation
             throw new System.Exception("Something Error!!!");
         }
     }
+
+    //Enums
+    public enum TweenType {
+        Linear,
+        ContinuousLinear,
+        Spring,
+        Punch,
+        EaseInExpo,
+        EaseOutExpo,
+        EaseInOutExpo,
+        EaseInCircular,
+        EaseOutCircular,
+        EaseInOutCircular,
+        EaseInQuadratic,
+        EaseOutQuadratic,
+        EaseInOutQuadratic,
+        EaseInCubic,
+        EaseOutCubic,
+        EaseInOutCubic,
+        EaseInQuartic,
+        EaseOutQuartic,
+        EaseInOutQuartic,
+        EaseInQuintic,
+        EaseOutQuintic,
+        EaseInOutQuintic,
+        EaseInSinusiodal,
+        EaseOutSinusiodal,
+        EaseInOutSinusiodal,
+        EaseInBounce,
+        EaseOutBounce,
+        EaseInOutBounce,
+        EaseInBack,
+        EaseOutBack,
+        EaseInOutBack,
+        EaseInElastic,
+        EaseOutElastic,
+        EaseInOutElastic,
+    }
+
+    public enum TweenMode {
+        Once,
+        Loop,
+        PingPong,
+    }
+
+    public enum TweenStatus {
+        Stop,
+        Pause,
+        Tween,
+    }
+
+    public enum TweenDirection {
+        None = 0,
+        Forward = 1,
+        Reverse = -1
+    }
+
+    //Delegates
+    public delegate void TweenUpdateDelegate<T>(T value);
+
+    public delegate T TweenCalculateDelegate<T>(float percentage);
 }

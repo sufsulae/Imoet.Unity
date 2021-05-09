@@ -5,29 +5,23 @@ namespace Imoet.UnityEditor
 {
     public static class UnityEditorSkin
     {
-        public static GUIStyle GetInternalStyle(string name)
-        {
-            GUIStyle g = name;
-            return g;
-        }
-
-        public static GUIStyle windowBottomResize { get { return GetInternalStyle("WindowBottomResize"); } }
+        public static GUIStyle windowBottomResize { get { return "WindowBottomResize"; } }
 
         public static GUIStyle helpBox { get { return new GUIStyle(EditorStyles.helpBox); } }
-        public static GUIStyle windowCloseButton { get { return new GUIStyle(GetInternalStyle("WinBtnClose")); } }
-        public static GUIStyle windowMinButton { get { return new GUIStyle(GetInternalStyle("WinBtnMin")); } }
-        public static GUIStyle windowMaxButton { get { return new GUIStyle(GetInternalStyle("WinBtnMax")); } }
+        public static GUIStyle windowCloseButton { get { return new GUIStyle("WinBtnClose"); } }
+        public static GUIStyle windowMinButton { get { return new GUIStyle("WinBtnMin"); } }
+        public static GUIStyle windowMaxButton { get { return new GUIStyle("WinBtnMax"); } }
 
-        public static GUIStyle RLdraggingHandle { get { return new GUIStyle(GetInternalStyle("RL DragHandle")); } }
-        public static GUIStyle RLheaderBackground { get { return new GUIStyle(GetInternalStyle("RL Header")); } }
-        public static GUIStyle RLfooterBackground { get { return new GUIStyle(GetInternalStyle("RL Footer")); } }
-        public static GUIStyle RLboxBackground { get { return new GUIStyle(GetInternalStyle("RL Background")); } }
-        public static GUIStyle RLpreButton { get { return new GUIStyle(GetInternalStyle("RL FooterButton")); } }
-        public static GUIStyle RLelementBackground { get { return new GUIStyle(GetInternalStyle("RL Element")); } }
+        public static GUIStyle RLdraggingHandle { get { return new GUIStyle("RL DragHandle"); } }
+        public static GUIStyle RLheaderBackground { get { return new GUIStyle("RL Header"); } }
+        public static GUIStyle RLfooterBackground { get { return new GUIStyle("RL Footer"); } }
+        public static GUIStyle RLboxBackground { get { return new GUIStyle("RL Background"); } }
+        public static GUIStyle RLpreButton { get { return new GUIStyle("RL FooterButton"); } }
+        public static GUIStyle RLelementBackground { get { return new GUIStyle("RL Element"); } }
 
-        public static GUIStyle TEtoolBar { get { return new GUIStyle(GetInternalStyle("TE Toolbar")); } }
-        public static GUIStyle INlockButton { get { return new GUIStyle(GetInternalStyle("IN LockButton")); } }
-        public static GUIStyle invisibleButton { get { return new GUIStyle(GetInternalStyle("InvisibleButton")); } }
+        public static GUIStyle TEtoolBar { get { return new GUIStyle("TE Toolbar"); } }
+        public static GUIStyle INlockButton { get { return new GUIStyle("IN LockButton"); } }
+        public static GUIStyle invisibleButton { get { return new GUIStyle("InvisibleButton"); } }
 
         public static GUIStyle centeredLabel
         {
@@ -38,7 +32,6 @@ namespace Imoet.UnityEditor
                 return style;
             }
         }
-
         public static GUIStyle midBoldLabel
         {
             get
@@ -48,7 +41,6 @@ namespace Imoet.UnityEditor
                 return style;
             }
         }
-
         public static GUIStyle normalStyle
         {
             get

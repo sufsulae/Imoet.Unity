@@ -65,14 +65,14 @@ namespace Imoet.UnityEditor
 
         private Item m_selectedItem = null;
         private Item m_hoveredItem = null;
-        private Rect m_selectionRect = default;
+        private Rect m_selectionRect = default(Rect);
 
         private bool m_sealed = false;
         private bool m_dragged = false;
-        private Vector2 m_lastMousePos = default;
+        private Vector2 m_lastMousePos = default(Vector2);
 
-        private Rect m_headerRect = default;
-        private Rect m_bodyRect = default;
+        private Rect m_headerRect = default(Rect);
+        private Rect m_bodyRect = default(Rect);
         #endregion
 
         #region Default Event Drawer
